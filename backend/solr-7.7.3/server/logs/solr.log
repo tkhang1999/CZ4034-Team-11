@@ -1,0 +1,64 @@
+2021-02-10 16:15:22.798 INFO  (main) [   ] o.e.j.u.log Logging initialized @10211ms to org.eclipse.jetty.util.log.Slf4jLog
+2021-02-10 16:15:24.286 WARN  (main) [   ] o.e.j.s.AbstractConnector Ignoring deprecated socket close linger time
+2021-02-10 16:15:24.312 INFO  (main) [   ] o.e.j.s.Server jetty-9.4.14.v20181114; built: 2018-11-14T21:20:31.478Z; git: c4550056e785fb5665914545889f21dc136ad9e6; jvm 11.0.8+10-LTS
+2021-02-10 16:15:24.409 INFO  (main) [   ] o.e.j.d.p.ScanningAppProvider Deployment monitor [file:///C:/Users/Dell/Documents/CZ4034-Team-11/backend/solr-7.7.3/server/contexts/] at interval 0
+2021-02-10 16:15:25.465 INFO  (main) [   ] o.e.j.w.StandardDescriptorProcessor NO JSP Support for /solr, did not find org.apache.jasper.servlet.JspServlet
+2021-02-10 16:15:25.494 INFO  (main) [   ] o.e.j.s.session DefaultSessionIdManager workerName=node0
+2021-02-10 16:15:25.495 INFO  (main) [   ] o.e.j.s.session No SessionScavenger set, using defaults
+2021-02-10 16:15:25.531 INFO  (main) [   ] o.e.j.s.session node0 Scavenging every 660000ms
+2021-02-10 16:15:25.871 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter Using logger factory org.apache.logging.slf4j.Log4jLoggerFactory
+2021-02-10 16:15:25.970 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter  ___      _       Welcome to Apache Solr™ version 7.7.3
+2021-02-10 16:15:25.970 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter / __| ___| |_ _   Starting in standalone mode on port 8983
+2021-02-10 16:15:25.970 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter \__ \/ _ \ | '_|  Install dir: C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3
+2021-02-10 16:15:25.971 INFO  (main) [   ] o.a.s.s.SolrDispatchFilter |___/\___/_|_|    Start time: 2021-02-10T16:15:25.971468900Z
+2021-02-10 16:15:26.471 INFO  (main) [   ] o.a.s.c.SolrResourceLoader Using system property solr.solr.home: C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr
+2021-02-10 16:15:26.614 INFO  (main) [   ] o.a.s.c.SolrXmlConfig Loading container configuration from C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr\solr.xml
+2021-02-10 16:15:27.250 INFO  (main) [   ] o.a.s.c.SolrXmlConfig MBean server found: com.sun.jmx.mbeanserver.JmxMBeanServer@1b266842, but no JMX reporters were configured - adding default JMX reporter.
+2021-02-10 16:15:28.171 INFO  (main) [   ] o.a.s.h.c.HttpShardHandlerFactory Host whitelist initialized: WhitelistHostChecker [whitelistHosts=null, whitelistHostCheckingEnabled=true]
+2021-02-10 16:15:34.088 INFO  (main) [   ] o.a.s.c.TransientSolrCoreCacheDefault Allocating transient cache for 2147483647 transient cores
+2021-02-10 16:15:34.092 INFO  (main) [   ] o.a.s.h.a.MetricsHistoryHandler No .system collection, keeping metrics history in memory.
+2021-02-10 16:15:34.579 INFO  (main) [   ] o.a.s.m.r.SolrJmxReporter JMX monitoring for 'solr.node' (registry 'solr.node') enabled at server: com.sun.jmx.mbeanserver.JmxMBeanServer@1b266842
+2021-02-10 16:15:34.587 INFO  (main) [   ] o.a.s.m.r.SolrJmxReporter JMX monitoring for 'solr.jvm' (registry 'solr.jvm') enabled at server: com.sun.jmx.mbeanserver.JmxMBeanServer@1b266842
+2021-02-10 16:15:34.598 INFO  (main) [   ] o.a.s.m.r.SolrJmxReporter JMX monitoring for 'solr.jetty' (registry 'solr.jetty') enabled at server: com.sun.jmx.mbeanserver.JmxMBeanServer@1b266842
+2021-02-10 16:15:34.800 INFO  (main) [   ] o.a.s.c.CorePropertiesLocator Found 0 core definitions underneath C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr
+2021-02-10 16:15:37.511 INFO  (main) [   ] o.e.j.s.h.ContextHandler Started o.e.j.w.WebAppContext@119f1f2a{/solr,file:///C:/Users/Dell/Documents/CZ4034-Team-11/backend/solr-7.7.3/server/solr-webapp/webapp/,AVAILABLE}{C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server/solr-webapp/webapp}
+2021-02-10 16:15:37.651 INFO  (main) [   ] o.e.j.s.AbstractConnector Started ServerConnector@44550792{HTTP/1.1,[http/1.1]}{0.0.0.0:8983}
+2021-02-10 16:15:37.651 INFO  (main) [   ] o.e.j.s.Server Started @25104ms
+2021-02-10 16:15:38.258 INFO  (qtp2073299099-21) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/system params={wt=json} status=0 QTime=224
+2021-02-10 16:16:05.008 INFO  (qtp2073299099-15) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/system params={wt=json} status=0 QTime=31
+2021-02-10 16:16:05.053 INFO  (qtp2073299099-17) [   ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/info/system params={wt=json} status=0 QTime=28
+2021-02-10 16:16:05.088 INFO  (qtp2073299099-19) [   x:toxictweets] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/cores params={core=toxictweets&action=STATUS&wt=json} status=0 QTime=1
+2021-02-10 16:16:05.555 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.h.a.CoreAdminOperation core create command name=toxictweets&action=CREATE&instanceDir=toxictweets&wt=json
+2021-02-10 16:16:05.808 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.c.SolrResourceLoader [toxictweets] Added 54 libs to classloader, from paths: [/C:/Users/Dell/Documents/CZ4034-Team-11/backend/solr-7.7.3/contrib/clustering/lib, /C:/Users/Dell/Documents/CZ4034-Team-11/backend/solr-7.7.3/contrib/extraction/lib, /C:/Users/Dell/Documents/CZ4034-Team-11/backend/solr-7.7.3/contrib/langid/lib, /C:/Users/Dell/Documents/CZ4034-Team-11/backend/solr-7.7.3/dist]
+2021-02-10 16:16:08.032 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.c.SolrConfig Using Lucene MatchVersion: 7.7.3
+2021-02-10 16:16:08.591 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.s.IndexSchema [toxictweets] Schema name=default-config
+2021-02-10 16:16:09.707 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.s.IndexSchema Loaded schema default-config/1.6 with uniqueid field id
+2021-02-10 16:16:09.791 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.c.CoreContainer Creating SolrCore 'toxictweets' using configuration from instancedir C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr\toxictweets, trusted=true
+2021-02-10 16:16:09.841 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.m.r.SolrJmxReporter JMX monitoring for 'solr.core.toxictweets' (registry 'solr.core.toxictweets') enabled at server: com.sun.jmx.mbeanserver.JmxMBeanServer@1b266842
+2021-02-10 16:16:09.943 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.c.SolrCore [[toxictweets] ] Opening new SolrCore at [C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr\toxictweets], dataDir=[C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr\toxictweets\data\]
+2021-02-10 16:16:10.225 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.r.XSLTResponseWriter xsltCacheLifetimeSeconds=5
+2021-02-10 16:16:15.572 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.u.UpdateHandler Using UpdateLog implementation: org.apache.solr.update.UpdateLog
+2021-02-10 16:16:15.573 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.u.UpdateLog Initializing UpdateLog: dataDir= defaultSyncLevel=FLUSH numRecordsToKeep=100 maxNumLogsToKeep=10 numVersionBuckets=65536
+2021-02-10 16:16:15.586 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.u.CommitTracker Hard AutoCommit: if uncommitted for 15000ms; 
+2021-02-10 16:16:15.586 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.u.CommitTracker Soft AutoCommit: disabled
+2021-02-10 16:16:15.628 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.s.SolrIndexSearcher Opening [Searcher@5ace5fdb[toxictweets] main]
+2021-02-10 16:16:15.649 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.r.ManagedResourceStorage File-based storage initialized to use dir: C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr\toxictweets\conf
+2021-02-10 16:16:15.715 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.h.c.SpellCheckComponent Initializing spell checkers
+2021-02-10 16:16:15.724 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.s.DirectSolrSpellChecker init: {name=default,field=_text_,classname=solr.DirectSolrSpellChecker,distanceMeasure=internal,accuracy=0.5,maxEdits=2,minPrefix=1,maxInspections=5,minQueryLength=4,maxQueryFrequency=0.01}
+2021-02-10 16:16:15.740 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.h.ReplicationHandler Commits will be reserved for 10000ms.
+2021-02-10 16:16:15.765 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.u.UpdateLog Could not find max version in index or recent updates, using new clock 1691325589896560640
+2021-02-10 16:16:15.770 INFO  (searcherExecutor-10-thread-1-processing-x:toxictweets) [   x:toxictweets] o.a.s.c.QuerySenderListener QuerySenderListener sending requests to Searcher@5ace5fdb[toxictweets] main{ExitableDirectoryReader(UninvertingDirectoryReader())}
+2021-02-10 16:16:15.770 INFO  (searcherExecutor-10-thread-1-processing-x:toxictweets) [   x:toxictweets] o.a.s.c.QuerySenderListener QuerySenderListener done.
+2021-02-10 16:16:15.771 INFO  (searcherExecutor-10-thread-1-processing-x:toxictweets) [   x:toxictweets] o.a.s.h.c.SpellCheckComponent Loading spell index for spellchecker: default
+2021-02-10 16:16:15.775 INFO  (qtp2073299099-20) [   x:toxictweets] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/cores params={name=toxictweets&action=CREATE&instanceDir=toxictweets&wt=json} status=0 QTime=10219
+2021-02-10 16:16:15.789 INFO  (searcherExecutor-10-thread-1-processing-x:toxictweets) [   x:toxictweets] o.a.s.c.SolrCore [toxictweets] Registered new searcher Searcher@5ace5fdb[toxictweets] main{ExitableDirectoryReader(UninvertingDirectoryReader())}
+2021-02-10 16:21:30.586 INFO  (qtp2073299099-15) [   x:toxictweets] o.a.s.s.ManagedIndexSchema Upgraded to managed schema at C:\Users\Dell\Documents\CZ4034-Team-11\backend\solr-7.7.3\server\solr\toxictweets\conf\managed-schema
+2021-02-10 16:21:31.306 INFO  (qtp2073299099-15) [   x:toxictweets] o.a.s.u.DirectUpdateHandler2 start commit{_version_=1691325920765280256,optimize=false,openSearcher=true,waitSearcher=true,expungeDeletes=false,softCommit=false,prepareCommit=false}
+2021-02-10 16:21:31.307 INFO  (qtp2073299099-15) [   x:toxictweets] o.a.s.u.SolrIndexWriter Calling setCommitData with IW:org.apache.solr.update.SolrIndexWriter@75dadb2f commitCommandVersion:1691325920765280256
+2021-02-10 16:21:32.172 INFO  (qtp2073299099-15) [   x:toxictweets] o.a.s.s.SolrIndexSearcher Opening [Searcher@76ec3265[toxictweets] main]
+2021-02-10 16:21:32.174 INFO  (searcherExecutor-10-thread-1-processing-x:toxictweets) [   x:toxictweets] o.a.s.c.QuerySenderListener QuerySenderListener sending requests to Searcher@76ec3265[toxictweets] main{ExitableDirectoryReader(UninvertingDirectoryReader(Uninverting(_0(7.7.3):C599:[diagnostics={os=Windows 10, java.vendor=Oracle Corporation, java.version=11.0.8, java.vm.version=11.0.8+10-LTS, lucene.version=7.7.3, os.arch=amd64, java.runtime.version=11.0.8+10-LTS, source=flush, os.version=10.0, timestamp=1612974091496}]:[attributes={Lucene50StoredFieldsFormat.mode=BEST_SPEED}])))}
+2021-02-10 16:21:32.175 INFO  (qtp2073299099-15) [   x:toxictweets] o.a.s.u.DirectUpdateHandler2 end_commit_flush
+2021-02-10 16:21:32.175 INFO  (searcherExecutor-10-thread-1-processing-x:toxictweets) [   x:toxictweets] o.a.s.c.QuerySenderListener QuerySenderListener done.
+2021-02-10 16:21:32.195 INFO  (searcherExecutor-10-thread-1-processing-x:toxictweets) [   x:toxictweets] o.a.s.c.SolrCore [toxictweets] Registered new searcher Searcher@76ec3265[toxictweets] main{ExitableDirectoryReader(UninvertingDirectoryReader(Uninverting(_0(7.7.3):C599:[diagnostics={os=Windows 10, java.vendor=Oracle Corporation, java.version=11.0.8, java.vm.version=11.0.8+10-LTS, lucene.version=7.7.3, os.arch=amd64, java.runtime.version=11.0.8+10-LTS, source=flush, os.version=10.0, timestamp=1612974091496}]:[attributes={Lucene50StoredFieldsFormat.mode=BEST_SPEED}])))}
+2021-02-10 16:21:32.229 INFO  (qtp2073299099-15) [   x:toxictweets] o.a.s.u.p.LogUpdateProcessorFactory [toxictweets]  webapp=/solr path=/update params={commit=true}{add=[0 (1691325920062734336), 1 (1691325920291323904), 2 (1691325920293421056), 3 (1691325920295518208), 4 (1691325920297615360), 5 (1691325920298663936), 6 (1691325920299712512), 7 (1691325920300761088), 8 (1691325920302858240), 9 (1691325920302858241), ... (599 adds)],commit=} 0 2089
+2021-02-10 16:21:32.343 INFO  (qtp2073299099-19) [   x:toxictweets] o.a.s.c.S.Request [toxictweets]  webapp=/solr path=/select params={q=tweet:+shit&fl=id,tweet&rows=15&wt=json} hits=42 status=0 QTime=108
