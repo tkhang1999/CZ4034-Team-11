@@ -439,8 +439,10 @@
   <field name="_root_" type="string" docValues="false" indexed="true" stored="false"/>
   <field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>
   <field name="_version_" type="plong" indexed="false" stored="false"/>
+  <field name="delete" type="text_general"/>
   <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
   <field name="link" type="text_general"/>
+  <field name="location" type="text_general"/>
   <field name="severe_toxic" type="plongs"/>
   <field name="subjectivity" type="plongs"/>
   <field name="toxic" type="plongs"/>
@@ -514,4 +516,6 @@
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <copyField source="link" dest="link_str" maxChars="256"/>
   <copyField source="tweet" dest="tweet_str" maxChars="256"/>
+  <copyField source="delete" dest="delete_str" maxChars="256"/>
+  <copyField source="location" dest="location_str" maxChars="256"/>
 </schema>
