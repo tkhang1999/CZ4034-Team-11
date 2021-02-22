@@ -10,7 +10,11 @@ def find(name, path):
 directory = find("sample_data.csv", ".")
 tweets = pd.read_csv(directory, dtype={'id': str})
 
-data = [{"id": index, "tweet": row["tweet"], "link": row["link"], \
+#data = [{"id": index, "tweet": row["tweet"], "link": row["link"], \
+#    "toxic": row["toxic"], "severe_toxic": row["severe_toxic"], "subjectivity": row["subjectivity"]} \
+#    for index, row in tweets.iterrows()]
+
+data = [{"id": index, "tweet": row["text"], "location": row["user_location"], "link": row["link"], \
     "toxic": row["toxic"], "severe_toxic": row["severe_toxic"], "subjectivity": row["subjectivity"]} \
     for index, row in tweets.iterrows()]
 
