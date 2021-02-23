@@ -42,6 +42,7 @@ function App() {
   const classes = useStyles();
 
   const handleChangeTabs = (event, newValue) => {
+    console.log(newValue);
     setValue(newValue);
   };
 
