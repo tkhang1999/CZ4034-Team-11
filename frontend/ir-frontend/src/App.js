@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 
 import Search from "./components/Search";
+import Geo from "./components/Geo";
 
 
 function TabPanel(props) {
@@ -77,8 +78,8 @@ function App() {
             <Search />
           </TabPanel>
           <TabPanel value={value} index={1} dir={theme.direction}>
-            Item Two
-        </TabPanel>
+            <Geo />
+          </TabPanel>
         </SwipeableViews>
       </Paper>
     </div>
