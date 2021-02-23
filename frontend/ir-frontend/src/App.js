@@ -1,42 +1,35 @@
 import React, { useState } from "react";
 import './App.css';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
-import { Paper, Box, Tab, Tabs } from '@material-ui/core';
+import { Paper, Tab, Tabs, AppBar, Toolbar, CssBaseline, useScrollTrigger } from '@material-ui/core';
 import SwipeableViews from "react-swipeable-views";
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 
 import Search from "./components/Search";
 import Geo from "./components/Geo";
+import TabPanel from "./components/TabPanel";
 
+//Handles sticky header
+function ElevationScroll(props) {
+  const { children, window } = props;
+  const trigger = useScrollTrigger({
+    disableHysteresis: true,
+    threshold: 0,
+    target: window ? window() : undefined,
+  });
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`full-width-tabpanel-${index}`}
-      aria-labelledby={`full-width-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box p={3}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
+  return React.cloneElement(children, {
+    elevation: trigger ? 4 : 0,
+  });
 }
 
-TabPanel.propTypes = {
-  children: PropTypes.node,
-  index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired,
+ElevationScroll.propTypes = {
+  children: PropTypes.element.isRequired,
+  window: PropTypes.func,
 };
 
-function App() {
+function App(props) {
   const [value, setValue] = useState(0);
   const theme = useTheme();
   const classes = useStyles();
@@ -52,37 +45,40 @@ function App() {
 
   return (
     <div className={classes.page}>
-      <Box
-        boxShadow={3}
-        className={classes.header}
+      <CssBaseline />
+      <ElevationScroll {...props}>
+        <AppBar style={{backgroundColor: "black"}}>
+          <Toolbar>
+            <Typography variant="h6">Welcome</Typography>
+          </Toolbar>
+          <Paper style={{ width: "100%" }}>
+            <Tabs
+              value={value}
+              indicatorColor="primary"
+              textColor="primary"
+              onChange={handleChangeTabs}
+              aria-label="disabled tabs example"
+              variant="fullWidth"
+            >
+              <Tab label="Search" />
+              <Tab label="Map" />
+            </Tabs>
+          </Paper>
+        </AppBar>
+      </ElevationScroll>
+      <Toolbar />
+      <SwipeableViews
+        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+        index={value}
+        onChangeIndex={handleChangeIndex}
       >
-        Welcome
-      </Box>
-      <Paper style={{ width: "100%" }}>
-        <Tabs
-          value={value}
-          indicatorColor="primary"
-          textColor="primary"
-          onChange={handleChangeTabs}
-          aria-label="disabled tabs example"
-          variant="fullWidth"
-        >
-          <Tab label="Search" />
-          <Tab label="Map" />
-        </Tabs>
-        <SwipeableViews
-          axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-          index={value}
-          onChangeIndex={handleChangeIndex}
-        >
-          <TabPanel value={value} index={0} dir={theme.direction}>
-            <Search />
-          </TabPanel>
-          <TabPanel value={value} index={1} dir={theme.direction}>
-            <Geo />
-          </TabPanel>
-        </SwipeableViews>
-      </Paper>
+        <TabPanel value={value} index={0} dir={theme.direction}>
+          <Search />
+        </TabPanel>
+        <TabPanel value={value} index={1} dir={theme.direction}>
+          <Geo />
+        </TabPanel>
+      </SwipeableViews>
     </div>
   );
 }
@@ -105,6 +101,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    marginTop: 30,
   },
   table: {
     width: window.innerWidth - 100,
