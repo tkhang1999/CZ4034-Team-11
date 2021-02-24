@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, TextField, FormControl, Select, InputLabel, MenuItem, Paper } from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem } from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { Countries } from "../constants/Countries";
 
@@ -20,8 +20,6 @@ export default function Search() {
     useEffect(() => {
         if (country != 0) {
             onCountrySelect();
-        } else {
-            clearMarkers();
         }
     }, [country, filter])
 
@@ -215,37 +213,6 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-    },
-    table: {
-        width: window.innerWidth - 100,
-        margin: 50,
-        marginBottom: 0,
-        maxHeight: 440,
-    },
-    searchInput: {
-        marginBottom: 20,
-        marginTop: 50,
-        marginLeft: 50,
-        marginRight: 50,
-        backgroundColor: "#FFFFFF",
-    },
-    button: {
-        marginLeft: 20,
-        marginRight: 20,
-        width: 200,
-    },
-    pagination: {
-        display: "flex",
-        paddingRight: 50,
-        padding: 20,
-        justifyContent: "flex-end"
-    },
-    icon: {
-        paddingLeft: 30,
-    },
-    text: {
-        padding: 20,
-        textAlign: "center",
     },
     formControl: {
         display: "flex",
