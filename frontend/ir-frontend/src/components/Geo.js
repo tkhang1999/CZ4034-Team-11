@@ -7,18 +7,19 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 import { Countries } from "../constants/Countries";
 
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
-
+const filterList = ["Toxic", "Severe Toxic", "Subjective"]
 
 export default function Search() {
     const markerOffset = 15;
     const [filter, setFilter] = useState(0);
     const [country, setCountry] = useState(0);
     const [markers, setMarkers] = useState([])
+    const [count, setCount] = useState(0);
     const classes = useStyles();
-    
-    useEffect(()=>{
+
+    useEffect(() => {
         onCountrySelect();
-    },[markers, filter])
+    }, [country, filter])
 
     function createData(name, user_geo) {
         let elements = "";
@@ -33,25 +34,43 @@ export default function Search() {
     const onCountrySelect = async () => {
         let user_location = "";
         let response = "";
-        if (country !== 0) {
-            user_location = countryList[country - 1].replace(" ", "%20")
-            response = await axios.get(`/solr/toxictweets/select?q=user_location:"${user_location}"&rows=100000`);
-            const rows = response.data.response.docs.map(item => {
-                return createData(countryList[country - 1], item.user_geo)
-            });
-            let newMarkers = [];
-            var i;
-            for (i = 0; i < rows.length; i++) {
-                newMarkers.push({
-                    markerOffset: markerOffset,
-                    name: rows[i]['name'],
-                    coordinates: [rows[i]['long'], rows[i]['lat']]
-                })
-            }
-            setMarkers(newMarkers);
-        } else{
-            setMarkers([])
+        setMarkers([])
+        //put the switch case here and append it to the query params below
+        let queryparams = "";
+        switch (filter) {
+            case 1:
+                queryparams = "&fq=toxic:1";
+                break;
+            case 2:
+                queryparams = "&fq=severe_toxic:1";
+                break;
+            case 3:
+                queryparams = "&fq=subjectivity:1";
+                break;
+            default:
+                queryparams = "";
         }
+        if (country !== 0) {
+            user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
+        } else {
+            user_location = "*";
+            // setCount(0);
+        }
+        response = await axios.get(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
+        setCount(response.data.response.numFound);
+        const rows = response.data.response.docs.map(item => {
+            return createData(countryList[country - 1], item.user_geo)
+        });
+        let newMarkers = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            newMarkers.push({
+                markerOffset: markerOffset,
+                name: rows[i]['name'],
+                coordinates: [rows[i]['long'], rows[i]['lat']]
+            })
+        }
+        setMarkers(newMarkers);
     }
 
     const handleChange = (event) => {
@@ -72,7 +91,7 @@ export default function Search() {
             <Marker key={name} coordinates={coordinates}>
                 <g
                     fill="none"
-                    stroke="#FF5533"
+                    stroke="#3F51B5"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -85,12 +104,21 @@ export default function Search() {
         ));
     }
 
+    const renderCaption = () => {
+        if (country !== 0) {
+            return (<Typography variant="h5" gutterBottom>
+                {filterList[filter - 1]} tweets in the {countryList[country - 1]}
+            </Typography>)
+        }
+        return (<Typography variant="h5" gutterBottom>
+            {filterList[filter - 1]} tweets in our database
+        </Typography>)
+    }
+
     return (
         <div className={classes.page}>
-            <CountUp end={10000} duration={3} style={{ fontSize: 150, lineHeight: 1 }} separator="," />
-            <Typography variant="h5" gutterBottom>
-                toxic tweets in the United States
-            </Typography>
+            <CountUp end={count} duration={3} style={{ fontSize: 150, lineHeight: 1 }} separator="," />
+            {renderCaption()}
             <div className={classes.formControl}>
                 <FormControl variant="outlined" style={{ flex: 1, marginRight: 5, }}>
                     <InputLabel id="demo-simple-select-outlined-label">Countries</InputLabel>
@@ -128,18 +156,18 @@ export default function Search() {
                 </FormControl>
             </div>
             <div style={{ width: window.innerWidth * 0.5 }}>
-            <ComposableMap>
-                <Geographies
-                    geography={geoUrl}>
-                    {({ geographies }) =>
-                        geographies.map(geo => <Geography
-                            key={geo.rsmKey} geography={geo}
-                            fill="#EAEAEC"
-                            stroke="#D6D6DA" />)
-                    }
-                </Geographies>
-                {renderMarker()}
-            </ComposableMap>
+                <ComposableMap>
+                    <Geographies
+                        geography={geoUrl}>
+                        {({ geographies }) =>
+                            geographies.map(geo => <Geography
+                                key={geo.rsmKey} geography={geo}
+                                fill="#EAEAEC"
+                                stroke="#D6D6DA" />)
+                        }
+                    </Geographies>
+                    {renderMarker()}
+                </ComposableMap>
             </div>
         </div >)
 }
