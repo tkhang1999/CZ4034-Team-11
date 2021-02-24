@@ -13,8 +13,7 @@ export default function Search() {
     const markerOffset = 15;
     const [filter, setFilter] = useState(0);
     const [country, setCountry] = useState(0);
-    const [data, setData] = useState(null);
-    const [markers, setMarkers] = useState([{}])
+    const [markers, setMarkers] = useState([])
     const classes = useStyles();
 
     useEffect(() => {
@@ -33,30 +32,26 @@ export default function Search() {
         return { name, long, lat }
     }
 
-    function clearMarkers() {
-        console.log("HERE: clearMarkers")
-        console.log(markers)
-        if (markers != null && markers.length == 0) {
-            console.log("HERE: already 0")
-            return;
-        }
-        while (markers.length > 0) {
-            markers.pop()
-        }
-        console.log(markers)
-        // setMarkers(markers)
-        console.log("HERE: should be 0")
-        renderEmptyMap();
-    }
-
     const onCountrySelect = async () => {
         let user_location = "";
-        let data = "";
+        let response = "";
         if (country != 0) {
             user_location = countryList[country - 1].replace(" ", "%20")
-            data = await axios.get(`/solr/toxictweets/select?q=user_location:"${user_location}"&rows=100000`);
-            console.log(data);
-            setData(data.data.response.docs);
+            response = await axios.get(`/solr/toxictweets/select?q=user_location:"${user_location}"&rows=100000`);
+            const rows = response.data.response.docs.map(item => {
+                return createData(countryList[country - 1], item.user_geo)
+            });
+            let newMarkers = [];
+            var i;
+            for (i = 0; i < rows.length; i++) {
+                console.log(rows[0]['name']);
+                newMarkers.push({
+                    markerOffset: markerOffset,
+                    name: rows[i]['name'],
+                    coordinates: [rows[i]['long'], rows[i]['lat']]
+                })
+            }
+            setMarkers(newMarkers);
         }
     }
 
@@ -65,16 +60,12 @@ export default function Search() {
     };
 
     const handleCountryChange = (event) => {
-        // renderEmptyMap();
         setCountry(event.target.value);
+        setMarkers([]);
+        console.log("Handle Country Change");
         onCountrySelect();
-        // setMarkers(markers);
+        console.log(markers);
     }
-
-    // const handleGoTo = (locationIndex) => () => {
-    //     const location = locations[locationIndex];
-    //     setLocation(location);
-    // };
 
     let countryList = []
     for (const [key, value] of Object.entries(Countries)) {
@@ -82,81 +73,21 @@ export default function Search() {
     }
 
     const renderMarker = () => {
-        if (data == null) {
-            return null;
-        }
-
-        if (country == 0) {
-            return renderEmptyMap();
-        }
-
-        const rows = data.map(item => {
-            return createData(countryList[country - 1], item.user_geo)
-        });
-        // let markers = []
-
-        console.log("HERE: renderMarker");
-        // console.log(markers.length)
-        console.log(markers)
-        console.log("HERE: renderMarker - adding things")
-
-        var i;
-        for (i = 0; i < rows.length; i++) {
-            console.log(rows[0]['name']);
-            markers.push({
-                markerOffset: markerOffset,
-                name: rows[i]['name'],
-                coordinates: [rows[i]['long'], rows[i]['lat']]
-            })
-        }
-
-        // console.log(markers.length)
-        console.log(markers)
-        // setMarkers(markers)
-
-        return (
-            <ComposableMap>
-                <Geographies
-                    geography={geoUrl}>
-                    {({ geographies }) =>
-                        geographies.map(geo => <Geography
-                            key={geo.rsmKey} geography={geo}
-                            fill="#EAEAEC"
-                            stroke="#D6D6DA" />)
-                    }
-                </Geographies>
-                {markers.map(({ name, coordinates, markerOffset }) => (
-                    <Marker key={name} coordinates={coordinates}>
-                        <g
-                            fill="none"
-                            stroke="#FF5533"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            transform="translate(-12, -24)"
-                        >
-                            <circle cx="12" cy="10" r="3" />
-                            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
-                        </g>
-                    </Marker>
-                ))}
-            </ComposableMap>);
-    }
-
-    const renderEmptyMap = () => {
-        console.log("HERE: renderEmptyMap");
-        return (
-            <ComposableMap>
-                <Geographies
-                    geography={geoUrl}>
-                    {({ geographies }) =>
-                        geographies.map(geo => <Geography
-                            key={geo.rsmKey} geography={geo}
-                            fill="#EAEAEC"
-                            stroke="#D6D6DA" />)
-                    }
-                </Geographies>
-            </ComposableMap>);
+        return markers.map(({ name, coordinates, markerOffset }) => (
+            <Marker key={name} coordinates={coordinates}>
+                <g
+                    fill="none"
+                    stroke="#FF5533"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    transform="translate(-12, -24)"
+                >
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
+                </g>
+            </Marker>
+        ));
     }
 
     return (
@@ -202,8 +133,18 @@ export default function Search() {
                 </FormControl>
             </div>
             <div style={{ width: window.innerWidth * 0.5 }}>
-                {clearMarkers()}
-                {country ? renderMarker() : renderEmptyMap()}
+            <ComposableMap>
+                <Geographies
+                    geography={geoUrl}>
+                    {({ geographies }) =>
+                        geographies.map(geo => <Geography
+                            key={geo.rsmKey} geography={geo}
+                            fill="#EAEAEC"
+                            stroke="#D6D6DA" />)
+                    }
+                </Geographies>
+                {renderMarker()}
+            </ComposableMap>
             </div>
         </div >)
 }
