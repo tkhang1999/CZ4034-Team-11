@@ -15,12 +15,10 @@ export default function Search() {
     const [country, setCountry] = useState(0);
     const [markers, setMarkers] = useState([])
     const classes = useStyles();
-
-    useEffect(() => {
-        if (country != 0) {
-            onCountrySelect();
-        }
-    }, [country, filter])
+    
+    useEffect(()=>{
+        onCountrySelect();
+    },[markers, filter])
 
     function createData(name, user_geo) {
         let elements = "";
@@ -35,7 +33,7 @@ export default function Search() {
     const onCountrySelect = async () => {
         let user_location = "";
         let response = "";
-        if (country != 0) {
+        if (country !== 0) {
             user_location = countryList[country - 1].replace(" ", "%20")
             response = await axios.get(`/solr/toxictweets/select?q=user_location:"${user_location}"&rows=100000`);
             const rows = response.data.response.docs.map(item => {
@@ -44,7 +42,6 @@ export default function Search() {
             let newMarkers = [];
             var i;
             for (i = 0; i < rows.length; i++) {
-                console.log(rows[0]['name']);
                 newMarkers.push({
                     markerOffset: markerOffset,
                     name: rows[i]['name'],
@@ -52,6 +49,8 @@ export default function Search() {
                 })
             }
             setMarkers(newMarkers);
+        } else{
+            setMarkers([])
         }
     }
 
@@ -61,10 +60,6 @@ export default function Search() {
 
     const handleCountryChange = (event) => {
         setCountry(event.target.value);
-        setMarkers([]);
-        console.log("Handle Country Change");
-        onCountrySelect();
-        console.log(markers);
     }
 
     let countryList = []
