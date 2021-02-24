@@ -2,26 +2,76 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, TextField, FormControl, Select, InputLabel, MenuItem, Paper } from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem } from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { Countries } from "../constants/Countries";
 
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
-
-const asianMarkers = [
-    {
-        markerOffset: 20,
-        name: "Surabaya",
-        coordinates: [112.7521, 7.2575]
-    },
-    { markerOffset: 15, name: "Jakarta", coordinates: [106.8456, 6.2088] },
-    { markerOffset: 15, name: "Bali", coordinates: [115.0920, 8.3405] },
-]
+const filterList = ["Toxic", "Severe Toxic", "Subjective"]
 
 export default function Search() {
+    const markerOffset = 15;
     const [filter, setFilter] = useState(0);
     const [country, setCountry] = useState(0);
+    const [markers, setMarkers] = useState([])
+    const [count, setCount] = useState(0);
     const classes = useStyles();
+
+    useEffect(() => {
+        onCountrySelect();
+    }, [country, filter])
+
+    function createData(name, user_geo) {
+        let elements = "";
+        let long = 0.0;
+        let lat = 0.0;
+        elements = user_geo[0].slice(1, -1).split(",");
+        lat = parseFloat(elements[0]);
+        long = parseFloat(elements[1]);
+        return { name, long, lat }
+    }
+
+    const onCountrySelect = async () => {
+        let user_location = "";
+        let response = "";
+        setMarkers([])
+        //put the switch case here and append it to the query params below
+        let queryparams = "";
+        switch (filter) {
+            case 1:
+                queryparams = "&fq=toxic:1";
+                break;
+            case 2:
+                queryparams = "&fq=severe_toxic:1";
+                break;
+            case 3:
+                queryparams = "&fq=subjectivity:1";
+                break;
+            default:
+                queryparams = "";
+        }
+        if (country !== 0) {
+            user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
+        } else {
+            user_location = "*";
+            // setCount(0);
+        }
+        response = await axios.get(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
+        setCount(response.data.response.numFound);
+        const rows = response.data.response.docs.map(item => {
+            return createData(countryList[country - 1], item.user_geo)
+        });
+        let newMarkers = [];
+        var i;
+        for (i = 0; i < rows.length; i++) {
+            newMarkers.push({
+                markerOffset: markerOffset,
+                name: rows[i]['name'],
+                coordinates: [rows[i]['long'], rows[i]['lat']]
+            })
+        }
+        setMarkers(newMarkers);
+    }
 
     const handleChange = (event) => {
         setFilter(event.target.value);
@@ -36,12 +86,39 @@ export default function Search() {
         countryList.push(key);
     }
 
+    const renderMarker = () => {
+        return markers.map(({ name, coordinates, markerOffset }) => (
+            <Marker key={name} coordinates={coordinates}>
+                <g
+                    fill="none"
+                    stroke="#3F51B5"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    transform="translate(-12, -24)"
+                >
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
+                </g>
+            </Marker>
+        ));
+    }
+
+    const renderCaption = () => {
+        if (country !== 0) {
+            return (<Typography variant="h5" gutterBottom>
+                {filterList[filter - 1]} tweets in the {countryList[country - 1]}
+            </Typography>)
+        }
+        return (<Typography variant="h5" gutterBottom>
+            {filterList[filter - 1]} tweets in our database
+        </Typography>)
+    }
+
     return (
         <div className={classes.page}>
-            <CountUp end={10000} duration={3} style={{ fontSize: 150, lineHeight: 1 }} separator="," />
-            <Typography variant="h5" gutterBottom>
-                toxic tweets in the United States
-            </Typography>
+            <CountUp end={count} duration={3} style={{ fontSize: 150, lineHeight: 1 }} separator="," />
+            {renderCaption()}
             <div className={classes.formControl}>
                 <FormControl variant="outlined" style={{ flex: 1, marginRight: 5, }}>
                     <InputLabel id="demo-simple-select-outlined-label">Countries</InputLabel>
@@ -89,21 +166,7 @@ export default function Search() {
                                 stroke="#D6D6DA" />)
                         }
                     </Geographies>
-                    {asianMarkers.map(({ name, coordinates, markerOffset }) => (
-                        <Marker key={name} coordinates={coordinates}>
-                            <g
-                                fill="none"
-                                stroke="#FF5533"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                transform="translate(-12, -24)"
-                            >
-                                <circle cx="12" cy="10" r="3" />
-                                <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
-                            </g>
-                        </Marker>
-                    ))}
+                    {renderMarker()}
                 </ComposableMap>
             </div>
         </div >)
@@ -114,37 +177,6 @@ const useStyles = makeStyles((theme) => ({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-    },
-    table: {
-        width: window.innerWidth - 100,
-        margin: 50,
-        marginBottom: 0,
-        maxHeight: 440,
-    },
-    searchInput: {
-        marginBottom: 20,
-        marginTop: 50,
-        marginLeft: 50,
-        marginRight: 50,
-        backgroundColor: "#FFFFFF",
-    },
-    button: {
-        marginLeft: 20,
-        marginRight: 20,
-        width: 200,
-    },
-    pagination: {
-        display: "flex",
-        paddingRight: 50,
-        padding: 20,
-        justifyContent: "flex-end"
-    },
-    icon: {
-        paddingLeft: 30,
-    },
-    text: {
-        padding: 20,
-        textAlign: "center",
     },
     formControl: {
         display: "flex",

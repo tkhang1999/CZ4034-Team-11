@@ -35,7 +35,6 @@ function App(props) {
   const classes = useStyles();
 
   const handleChangeTabs = (event, newValue) => {
-    console.log(newValue);
     setValue(newValue);
   };
 
@@ -86,59 +85,10 @@ function App(props) {
 export default App;
 
 const useStyles = makeStyles((theme) => ({
-  header: {
-    height: 300,
-    width: "100%",
-    backgroundColor: "#000000",
-    color: "#FFFFFF",
-    fontSize: 200,
-    fontStyle: "bold",
-    textJustify: "center",
-    textAlign: "center",
-    boxShadow: "0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
-  },
   page: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     marginTop: 30,
-  },
-  table: {
-    width: window.innerWidth - 100,
-    margin: 50,
-    marginBottom: 0,
-    maxHeight: 440,
-  },
-  searchInput: {
-    marginBottom: 20,
-    marginTop: 50,
-    marginLeft: 50,
-    marginRight: 50,
-    backgroundColor: "#FFFFFF",
-  },
-  button: {
-    marginLeft: 20,
-    marginRight: 20,
-    width: 200,
-  },
-  pagination: {
-    display: "flex",
-    paddingRight: 50,
-    padding: 20,
-    justifyContent: "flex-end"
-  },
-  icon: {
-    paddingLeft: 30,
-  },
-  text: {
-    padding: 20,
-    textAlign: "center",
-  },
-  formControl: {
-    display: "flex",
-    justifyContent: "space-between",
-    width: window.innerWidth - 100,
-    marginTop: 20,
-    marginBottom: 20,
   },
 }));
