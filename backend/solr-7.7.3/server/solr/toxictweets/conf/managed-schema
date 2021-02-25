@@ -522,4 +522,10 @@
   <copyField source="location" dest="location_str" maxChars="256"/>
   <copyField source="user_location" dest="user_location_str" maxChars="256"/>
   <copyField source="user_geo" dest="user_geo_str" maxChars="256"/>
+ <field name="spellcheck" type="text_general" 
+   indexed="true" 
+   stored="false" 
+   multiValued="true"/>
+
+<copyField source="tweet" dest="spellcheck"/>
 </schema>
