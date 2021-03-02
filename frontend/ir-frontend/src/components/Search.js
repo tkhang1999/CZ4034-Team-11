@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, FormControl, Button, Select, InputLabel, MenuItem, Paper } from '@material-ui/core';
+import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, FormControl, Button, Select, InputLabel, MenuItem, Paper, Dialog, ListItem, ListItemText, List, DialogTitle } from '@material-ui/core';
 import { Search as SearchIcon, ChevronLeft, ChevronRight, Check, Clear } from '@material-ui/icons';
 
 export default function Search() {
   const [page, setPage] = useState(0);
   const [data, setData] = useState(null);
   const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
   const [subjectivityFilter, setSubjectivityFilter] = useState(0);
   const [toxicityFilter, setToxicityFilter] = useState(0);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [searchToggle, setSearchToggle] = useState(false);
+
   const classes = useStyles();
 
   useEffect(() => {
     if (query != "") {
       onSearch();
     }
-  }, [page, subjectivityFilter, toxicityFilter])
+  }, [page, subjectivityFilter, toxicityFilter, searchToggle])
 
   function createData(id, tweet, link, toxic, severe_toxic, subjectivity) {
     return { id, tweet, link, toxic, severe_toxic, subjectivity };
@@ -35,9 +39,9 @@ export default function Search() {
         queryparams = "";
     }
 
-    switch(toxicityFilter){
+    switch (toxicityFilter) {
       case 1:
-        queryparams +="&fq=toxic:1"
+        queryparams += "&fq=toxic:1"
         break;
       case 2:
         queryparams += "&fq=severe_toxic:1"
@@ -48,6 +52,10 @@ export default function Search() {
     }
     const data = await axios.get(`/solr/toxictweets/select?q=tweet:${query}&rows=10&start=${page * 10}${queryparams}`);
     setData(data.data.response.docs);
+    // console.log(data.data.spellcheck);
+    if (data.data.spellcheck && data.data.spellcheck.suggestions[1] && data.data.spellcheck.suggestions[1].suggestion.length > 0) {
+      setSuggestions(data.data.spellcheck.suggestions[1].suggestion);
+    }
   }
 
   const handleToxicityChange = (event) => {
@@ -153,8 +161,55 @@ export default function Search() {
     );
   }
 
+  const handleListItemClick = (value) => {
+    setQuery(value);
+    setShowTooltip(false);
+    setSuggestions(null);
+    setSearchToggle(!searchToggle);
+  };
+
+  const renderDialog = () => {
+    if (suggestions == null) {
+      return null;
+    }
+    return (
+      // <div classesName={classes.dialog}>
+      <Dialog onClose={() => { setShowTooltip(false) }} aria-labelledby="simple-dialog-title" open={showTooltip} classes={{ paper: classes.dialog }} >
+        <DialogTitle id="simple-dialog-title">More Suggestions</DialogTitle>
+        <List>
+          {suggestions.slice(1).map(s => (
+            <ListItem button onClick={() => { handleListItemClick(s) }} key={s}>
+              <ListItemText primary={s} />
+            </ListItem>
+          ))}
+        </List>
+      </Dialog >
+      // </div>
+    )
+  }
+
+  const renderSuggestions = () => {
+    if (suggestions == null) {
+      return;
+    }
+
+    if (suggestions.length > 0) {
+      return (<p>Did you mean <i onClick={() => { handleListItemClick(suggestions[0]) }} style={{
+        color: '#0000b2',
+        cursor: 'pointer'
+      }}>"{suggestions[0]}"</i> <b onClick={() => setShowTooltip(true)} style={{
+        color: '#808080',
+        cursor: 'pointer'
+      }}>more</b></p>)
+    }
+  }
+
   return (
     <div className={classes.page}>
+      <div className={classes.suggestionText}>
+        {renderSuggestions()}
+        {renderDialog()}
+      </div>
       <div className={classes.formControl}>
         <FormControl style={{ flex: 5, marginRight: 20 }}>
           <TextField id="outlined-basic" label="Type your search query here" variant="outlined" value={query} onChange={(event) => setQuery(event.target.value)} onKeyPress={handleKeyPress} />
@@ -213,6 +268,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    textAlight: "left",
   },
   table: {
     width: window.innerWidth - 100,
@@ -252,4 +308,16 @@ const useStyles = makeStyles((theme) => ({
     marginTop: 20,
     marginBottom: 20,
   },
+  suggestionText: {
+    width: "100%",
+    display: "flex",
+    justifyContent: "left",
+    marginLeft: 100,
+  },
+  dialog: {
+    position: 'absolute',
+    left: 210,
+    top: 120,
+  }
+
 }));
