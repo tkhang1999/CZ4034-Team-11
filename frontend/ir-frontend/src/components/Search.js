@@ -46,7 +46,6 @@ export default function Search() {
         queryparams += "&fq=toxic:0"
         break;
     }
-    console.log(`/solr/toxictweets/select?q=tweet:${query}&rows=10&start=${page * 10}${queryparams}`);
     const data = await axios.get(`/solr/toxictweets/select?q=tweet:${query}&rows=10&start=${page * 10}${queryparams}`);
     setData(data.data.response.docs);
   }

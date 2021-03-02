@@ -7,11 +7,13 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 import { Countries } from "../constants/Countries";
 
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
-const filterList = ["Toxic", "Severe Toxic", "Subjective"]
+const subjectivityFilterList = ["", "Neutral", "Subjective"]
+const toxicityFilterList = ["", "Toxic", "Severe Toxic", "Non Toxic"]
 
 export default function Search() {
     const markerOffset = 15;
-    const [filter, setFilter] = useState(0);
+    const [subjectivityFilter, setSubjectivityFilter] = useState(0);
+    const [toxicityFilter, setToxicityFilter] = useState(0);
     const [country, setCountry] = useState(0);
     const [markers, setMarkers] = useState([])
     const [count, setCount] = useState(0);
@@ -19,7 +21,7 @@ export default function Search() {
 
     useEffect(() => {
         onCountrySelect();
-    }, [country, filter])
+    }, [country, subjectivityFilter, toxicityFilter])
 
     function createData(name, user_geo) {
         let elements = "";
@@ -37,25 +39,35 @@ export default function Search() {
         setMarkers([])
         //put the switch case here and append it to the query params below
         let queryparams = "";
-        switch (filter) {
+        switch (subjectivityFilter) {
             case 1:
-                queryparams = "&fq=toxic:1";
-                break;
+              queryparams = "&fq=subjectivity:0";
+              break;
             case 2:
-                queryparams = "&fq=severe_toxic:1";
-                break;
-            case 3:
-                queryparams = "&fq=subjectivity:1";
-                break;
+              queryparams = "&fq=subjectivity:1";
+              break;
             default:
-                queryparams = "";
-        }
+              queryparams = "";
+          }
+      
+          switch(toxicityFilter){
+            case 1:
+              queryparams +="&fq=toxic:1"
+              break;
+            case 2:
+              queryparams += "&fq=severe_toxic:1"
+              break;
+            case 3:
+              queryparams += "&fq=toxic:0"
+              break;
+          }
         if (country !== 0) {
             user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
         } else {
             user_location = "*";
             // setCount(0);
         }
+        console.log(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
         response = await axios.get(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
         setCount(response.data.response.numFound);
         const rows = response.data.response.docs.map(item => {
@@ -73,8 +85,12 @@ export default function Search() {
         setMarkers(newMarkers);
     }
 
-    const handleChange = (event) => {
-        setFilter(event.target.value);
+    const handleSubjectivityChange = (event) => {
+        setSubjectivityFilter(event.target.value);
+    };
+
+    const handleToxicityChange = (event) => {
+        setToxicityFilter(event.target.value);
     };
 
     const handleCountryChange = (event) => {
@@ -105,13 +121,20 @@ export default function Search() {
     }
 
     const renderCaption = () => {
+        let text = ""
+        if(toxicityFilter!==0 && subjectivityFilter!=0){
+            text = `${subjectivityFilterList[subjectivityFilter]}, ${toxicityFilterList[toxicityFilter]}`
+        } else{
+            text = `${subjectivityFilterList[subjectivityFilter]}${toxicityFilterList[toxicityFilter]}`
+        }
+
         if (country !== 0) {
             return (<Typography variant="h5" gutterBottom>
-                {filterList[filter - 1]} tweets in the {countryList[country - 1]}
+                {text} tweets in the {countryList[country - 1]}
             </Typography>)
         }
         return (<Typography variant="h5" gutterBottom>
-            {filterList[filter - 1]} tweets in our database
+            {text} tweets in our database
         </Typography>)
     }
 
@@ -137,23 +160,39 @@ export default function Search() {
                         ))}
                     </Select>
                 </FormControl>
-                <FormControl variant="outlined" style={{ flex: 1, marginLeft: 5, }}>
-                    <InputLabel id="demo-simple-select-outlined-label">Filter</InputLabel>
-                    <Select
-                        labelId="demo-simple-select-outlined-label"
-                        id="demo-simple-select-outlined"
-                        value={filter}
-                        onChange={handleChange}
-                        label="Filter"
-                    >
-                        <MenuItem value={0}>
-                            <em>None</em>
-                        </MenuItem>
-                        <MenuItem value={1}>Toxic</MenuItem>
-                        <MenuItem value={2}>Severe Toxic</MenuItem>
-                        <MenuItem value={3}>Subjectivity</MenuItem>
-                    </Select>
-                </FormControl>
+                <FormControl variant="outlined" style={{ flex: 1, marginRight: 5,}}>
+          <InputLabel id="demo-simple-select-outlined-label">Subjectivity</InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={subjectivityFilter}
+            onChange={handleSubjectivityChange}
+            label="Subjectivity"
+          >
+            <MenuItem value={0}>
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value={1}>Neutral</MenuItem>
+            <MenuItem value={2}>Subjective</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl variant="outlined" style={{ flex: 1, }}>
+          <InputLabel id="demo-simple-select-outlined-label">Toxicity</InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={toxicityFilter}
+            onChange={handleToxicityChange}
+            label="Toxicity"
+          >
+            <MenuItem value={0}>
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value={1}>Toxic</MenuItem>
+            <MenuItem value={2}>Severe Toxic</MenuItem>
+            <MenuItem value={3}>Non Toxic</MenuItem>
+          </Select>
+        </FormControl>
             </div>
             <div style={{ width: window.innerWidth * 0.5 }}>
                 <ComposableMap>
