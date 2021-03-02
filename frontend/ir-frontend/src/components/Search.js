@@ -8,14 +8,15 @@ export default function Search() {
   const [page, setPage] = useState(0);
   const [data, setData] = useState(null);
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState(0);
+  const [subjectivityFilter, setSubjectivityFilter] = useState(0);
+  const [toxicityFilter, setToxicityFilter] = useState(0);
   const classes = useStyles();
 
   useEffect(() => {
     if (query != "") {
       onSearch();
     }
-  }, [page, filter])
+  }, [page, subjectivityFilter, toxicityFilter])
 
   function createData(id, tweet, link, toxic, severe_toxic, subjectivity) {
     return { id, tweet, link, toxic, severe_toxic, subjectivity };
@@ -23,26 +24,40 @@ export default function Search() {
 
   const onSearch = async () => {
     let queryparams = "";
-    switch (filter) {
+    switch (subjectivityFilter) {
       case 1:
-        queryparams = "&fq=toxic:1";
+        queryparams = "&fq=subjectivity:0";
         break;
       case 2:
-        queryparams = "&fq=severe_toxic:1";
-        break;
-      case 3:
         queryparams = "&fq=subjectivity:1";
         break;
       default:
         queryparams = "";
     }
+
+    switch(toxicityFilter){
+      case 1:
+        queryparams +="&fq=toxic:1"
+        break;
+      case 2:
+        queryparams += "&fq=severe_toxic:1"
+        break;
+      case 3:
+        queryparams += "&fq=toxic:0"
+        break;
+    }
+    console.log(`/solr/toxictweets/select?q=tweet:${query}&rows=10&start=${page * 10}${queryparams}`);
     const data = await axios.get(`/solr/toxictweets/select?q=tweet:${query}&rows=10&start=${page * 10}${queryparams}`);
     setData(data.data.response.docs);
   }
 
-  const handleChange = (event) => {
-    setFilter(event.target.value);
+  const handleToxicityChange = (event) => {
+    setToxicityFilter(event.target.value);
   };
+
+  const handleSubjectivityChange = (event) => {
+    setSubjectivityFilter(event.target.value);
+  }
 
   const handleKeyPress = (event) => {
     if (event.key === 'Enter') {
@@ -146,20 +161,36 @@ export default function Search() {
           <TextField id="outlined-basic" label="Type your search query here" variant="outlined" value={query} onChange={(event) => setQuery(event.target.value)} onKeyPress={handleKeyPress} />
         </FormControl>
         <FormControl variant="outlined" style={{ flex: 1 }}>
-          <InputLabel id="demo-simple-select-outlined-label">Filter</InputLabel>
+          <InputLabel id="demo-simple-select-outlined-label">Subjectivity</InputLabel>
           <Select
             labelId="demo-simple-select-outlined-label"
             id="demo-simple-select-outlined"
-            value={filter}
-            onChange={handleChange}
-            label="Filter"
+            value={subjectivityFilter}
+            onChange={handleSubjectivityChange}
+            label="Subjectivity"
+          >
+            <MenuItem value={0}>
+              <em>None</em>
+            </MenuItem>
+            <MenuItem value={1}>Neutral</MenuItem>
+            <MenuItem value={2}>Subjective</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl variant="outlined" style={{ flex: 1, marginLeft: 20, }}>
+          <InputLabel id="demo-simple-select-outlined-label">Toxicity</InputLabel>
+          <Select
+            labelId="demo-simple-select-outlined-label"
+            id="demo-simple-select-outlined"
+            value={toxicityFilter}
+            onChange={handleToxicityChange}
+            label="Toxicity"
           >
             <MenuItem value={0}>
               <em>None</em>
             </MenuItem>
             <MenuItem value={1}>Toxic</MenuItem>
             <MenuItem value={2}>Severe Toxic</MenuItem>
-            <MenuItem value={3}>Subjectivity</MenuItem>
+            <MenuItem value={3}>Non Toxic</MenuItem>
           </Select>
         </FormControl>
       </div>
