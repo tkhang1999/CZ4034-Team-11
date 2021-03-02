@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, FormControl, Select, InputLabel, MenuItem } from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText} from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { Countries } from "../constants/Countries";
 
@@ -17,6 +17,7 @@ export default function Search() {
     const [country, setCountry] = useState(0);
     const [markers, setMarkers] = useState([])
     const [count, setCount] = useState(0);
+    const [tweets, setTweets] = useState(null);
     const classes = useStyles();
 
     useEffect(() => {
@@ -41,26 +42,26 @@ export default function Search() {
         let queryparams = "";
         switch (subjectivityFilter) {
             case 1:
-              queryparams = "&fq=subjectivity:0";
-              break;
+                queryparams = "&fq=subjectivity:0";
+                break;
             case 2:
-              queryparams = "&fq=subjectivity:1";
-              break;
+                queryparams = "&fq=subjectivity:1";
+                break;
             default:
-              queryparams = "";
-          }
-      
-          switch(toxicityFilter){
+                queryparams = "";
+        }
+
+        switch (toxicityFilter) {
             case 1:
-              queryparams +="&fq=toxic:1"
-              break;
+                queryparams += "&fq=toxic:1"
+                break;
             case 2:
-              queryparams += "&fq=severe_toxic:1"
-              break;
+                queryparams += "&fq=severe_toxic:1"
+                break;
             case 3:
-              queryparams += "&fq=toxic:0"
-              break;
-          }
+                queryparams += "&fq=toxic:0"
+                break;
+        }
         if (country !== 0) {
             user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
         } else {
@@ -70,6 +71,7 @@ export default function Search() {
         console.log(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
         response = await axios.get(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
         setCount(response.data.response.numFound);
+        setTweets(response.data.response.docs);
         const rows = response.data.response.docs.map(item => {
             return createData(countryList[country - 1], item.user_geo)
         });
@@ -122,9 +124,9 @@ export default function Search() {
 
     const renderCaption = () => {
         let text = ""
-        if(toxicityFilter!==0 && subjectivityFilter!=0){
+        if (toxicityFilter !== 0 && subjectivityFilter != 0) {
             text = `${subjectivityFilterList[subjectivityFilter]}, ${toxicityFilterList[toxicityFilter]}`
-        } else{
+        } else {
             text = `${subjectivityFilterList[subjectivityFilter]}${toxicityFilterList[toxicityFilter]}`
         }
 
@@ -136,6 +138,24 @@ export default function Search() {
         return (<Typography variant="h5" gutterBottom>
             {text} tweets in our database
         </Typography>)
+    }
+
+    const renderTweetList = () => {
+        console.log(tweets);
+        if (tweets == null) {
+            return null;
+        }
+
+        return tweets.map(t => (
+        <div>
+            <ListItem alignItems="flex-start">
+                <ListItemText
+                    primary={t.tweet}
+                />
+            </ListItem>
+            <Divider />
+        </div>
+        ))
     }
 
     return (
@@ -160,53 +180,62 @@ export default function Search() {
                         ))}
                     </Select>
                 </FormControl>
-                <FormControl variant="outlined" style={{ flex: 1, marginRight: 5,}}>
-          <InputLabel id="demo-simple-select-outlined-label">Subjectivity</InputLabel>
-          <Select
-            labelId="demo-simple-select-outlined-label"
-            id="demo-simple-select-outlined"
-            value={subjectivityFilter}
-            onChange={handleSubjectivityChange}
-            label="Subjectivity"
-          >
-            <MenuItem value={0}>
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={1}>Neutral</MenuItem>
-            <MenuItem value={2}>Subjective</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl variant="outlined" style={{ flex: 1, }}>
-          <InputLabel id="demo-simple-select-outlined-label">Toxicity</InputLabel>
-          <Select
-            labelId="demo-simple-select-outlined-label"
-            id="demo-simple-select-outlined"
-            value={toxicityFilter}
-            onChange={handleToxicityChange}
-            label="Toxicity"
-          >
-            <MenuItem value={0}>
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={1}>Toxic</MenuItem>
-            <MenuItem value={2}>Severe Toxic</MenuItem>
-            <MenuItem value={3}>Non Toxic</MenuItem>
-          </Select>
-        </FormControl>
+                <FormControl variant="outlined" style={{ flex: 1, marginRight: 5, }}>
+                    <InputLabel id="demo-simple-select-outlined-label">Subjectivity</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-outlined-label"
+                        id="demo-simple-select-outlined"
+                        value={subjectivityFilter}
+                        onChange={handleSubjectivityChange}
+                        label="Subjectivity"
+                    >
+                        <MenuItem value={0}>
+                            <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={1}>Neutral</MenuItem>
+                        <MenuItem value={2}>Subjective</MenuItem>
+                    </Select>
+                </FormControl>
+                <FormControl variant="outlined" style={{ flex: 1, }}>
+                    <InputLabel id="demo-simple-select-outlined-label">Toxicity</InputLabel>
+                    <Select
+                        labelId="demo-simple-select-outlined-label"
+                        id="demo-simple-select-outlined"
+                        value={toxicityFilter}
+                        onChange={handleToxicityChange}
+                        label="Toxicity"
+                    >
+                        <MenuItem value={0}>
+                            <em>None</em>
+                        </MenuItem>
+                        <MenuItem value={1}>Toxic</MenuItem>
+                        <MenuItem value={2}>Severe Toxic</MenuItem>
+                        <MenuItem value={3}>Non Toxic</MenuItem>
+                    </Select>
+                </FormControl>
             </div>
-            <div style={{ width: window.innerWidth * 0.5 }}>
-                <ComposableMap>
-                    <Geographies
-                        geography={geoUrl}>
-                        {({ geographies }) =>
-                            geographies.map(geo => <Geography
-                                key={geo.rsmKey} geography={geo}
-                                fill="#EAEAEC"
-                                stroke="#D6D6DA" />)
-                        }
-                    </Geographies>
-                    {renderMarker()}
-                </ComposableMap>
+            <div style={{ display: "flex", }}>
+                <div style={{ width: window.innerWidth * 0.5, marginRight: 20, }}>
+                <Typography variant="h3">Map</Typography>
+                    <ComposableMap>
+                        <Geographies
+                            geography={geoUrl}>
+                            {({ geographies }) =>
+                                geographies.map(geo => <Geography
+                                    key={geo.rsmKey} geography={geo}
+                                    fill="#EAEAEC"
+                                    stroke="#D6D6DA" />)
+                            }
+                        </Geographies>
+                        {renderMarker()}
+                    </ComposableMap>
+                </div>
+                <div>
+                    <Typography variant="h3">Tweets</Typography>
+                    <List className={classes.root}>
+                        {renderTweetList()}
+                    </List>
+                </div>
             </div>
         </div >)
 }
@@ -224,4 +253,11 @@ const useStyles = makeStyles((theme) => ({
         marginTop: 20,
         marginBottom: 20,
     },
+    root: {
+        width: window.innerWidth * 0.5 - 150,
+        maxHeight: window.innerHeight - 400,
+        overflow:"auto",
+        backgroundColor: theme.palette.background.paper,
+        marginTop: 20,
+    }
 }));
