@@ -444,8 +444,10 @@
   <field name="link" type="text_general"/>
   <field name="location" type="text_general"/>
   <field name="severe_toxic" type="plongs"/>
+  <field name="spellcheck" type="text_general" multiValued="true" indexed="true" stored="false"/>
   <field name="subjectivity" type="plongs"/>
   <field name="toxic" type="plongs"/>
+  <field name="toxicity" type="plongs"/>
   <field name="tweet" type="text_general"/>
   <field name="user_geo" type="text_general"/>
   <field name="user_location" type="text_general"/>
@@ -516,16 +518,11 @@
   <dynamicField name="*_f" type="pfloat" indexed="true" stored="true"/>
   <dynamicField name="*_d" type="pdouble" indexed="true" stored="true"/>
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
+  <copyField source="tweet" dest="spellcheck"/>
   <copyField source="link" dest="link_str" maxChars="256"/>
   <copyField source="tweet" dest="tweet_str" maxChars="256"/>
   <copyField source="delete" dest="delete_str" maxChars="256"/>
   <copyField source="location" dest="location_str" maxChars="256"/>
   <copyField source="user_location" dest="user_location_str" maxChars="256"/>
   <copyField source="user_geo" dest="user_geo_str" maxChars="256"/>
- <field name="spellcheck" type="text_general" 
-   indexed="true" 
-   stored="false" 
-   multiValued="true"/>
-
-<copyField source="tweet" dest="spellcheck"/>
 </schema>
