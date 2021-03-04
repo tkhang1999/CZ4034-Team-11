@@ -7,11 +7,15 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 import { ChevronLeft, ChevronRight, Search as SearchIcon } from '@material-ui/icons';
 import { Countries } from "../constants/Countries";
 
-import Carousel from 'react-bootstrap/Carousel'
+import Carousel from 'react-bootstrap/Carousel';
+import { Doughnut } from 'react-chartjs-2';
+
 
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
 const subjectivityFilterList = ["", "Neutral", "Subjective"]
 const toxicityFilterList = ["", "Toxic", "Severe Toxic", "Non Toxic"]
+const doughnutSubjectivityLabels = ["Neutral", "Subjective"]
+const doughnutToxicityLabels = ["Non Toxic", "Toxic", "Severe Toxic"]
 
 const columnDict = {
     toxicity: "T",
@@ -33,6 +37,8 @@ export default function Search() {
     const [searchToggle, setSearchToggle] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
     const [index, setIndex] = useState(0);
+    const [subjectivityDoughnutData, setSubjectivityDoughnutData] = useState(null);
+    const [toxicityDoughnutData, setToxicityDoughnutData] = useState(null);
     const classes = useStyles();
 
     const handleSelect = (selectedIndex, e) => {
@@ -42,6 +48,7 @@ export default function Search() {
     useEffect(() => {
         onCountrySelect();
         handleMapMarker();
+        getDoughnutCounts();
     }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
 
     function createData(name, user_geo) {
@@ -87,7 +94,7 @@ export default function Search() {
         if (query !== "") {
             lower = query.toLowerCase();
         }
-        response = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&fq=user_location:${user_location}&rows=10&start=${page * 10}${queryparams}`);
+        response = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&fq=user_location:${user_location}&rows=100&start=${page * 10}${queryparams}`);
         setCount(response.data.response.numFound);
         setTweets(response.data.response.docs);
         if (response.data.spellcheck && response.data.spellcheck.suggestions[1] && response.data.spellcheck.suggestions[1].suggestion.length > 0) {
@@ -130,7 +137,7 @@ export default function Search() {
         if (query !== "") {
             lower = query.toLowerCase();
         }
-        const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=user_location:${user_location}&fq=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
+        const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=user_location:${user_location}&fq=tweet:${lower}&rows=100&start=${page * 10}${queryparams}`);
         setMapGeo(geo.data.response.docs);
         const rows = geo.data.response.docs.map(item => {
             return createData(countryList[country - 1], item.user_geo)
@@ -346,6 +353,87 @@ export default function Search() {
         }
     }
 
+    const renderDoughnut = () => {
+        if (country == 0) {
+            return (<Typography variant="h8">Please select a country</Typography>);
+        } else {
+            return (
+                <div>
+                    < Doughnut data={toxicityDoughnutData} />
+                    < Doughnut data={subjectivityDoughnutData} />
+                </div>
+            );
+        }
+
+    }
+
+    const getDoughnutCounts = () => {
+        if (tweets == null || country == 0) {
+            return;
+        }
+
+        let tempNonToxicCount = 0;
+        let tempToxicCount = 0;
+        let tempSevereToxicCount = 0;
+        let tempNeutralCount = 0;
+        let tempSubjectiveCount = 0;
+
+        for (var i = 0; i < tweets.length; i++) {
+            const tweet = tweets[i];
+            if (tweet.subjectivity == 0) {
+                tempNeutralCount += 1;
+            } else if (tweet.subjectivity == 1) {
+                tempSubjectiveCount += 1;
+            }
+            if (tweet.toxicity == 0) {
+                tempNonToxicCount += 1;
+            } else if (tweet.toxicity == 1) {
+                tempToxicCount += 1;
+            } else if (tweet.toxicity == 2) {
+                tempSevereToxicCount += 1;
+            }
+        }
+
+        console.log("neutral")
+        console.log(tempNeutralCount)
+        console.log("subjective")
+        console.log(tempSubjectiveCount)
+        console.log("non toxic")
+        console.log(tempNonToxicCount)
+        console.log("toxic")
+        console.log(tempToxicCount)
+        console.log("severe toxic")
+        console.log(tempSevereToxicCount)
+
+        const tempSubjectivityDoughnutData = JSON.parse(JSON.stringify({
+            maintainAspectRatio: false,
+            responsive: false,
+            labels: doughnutSubjectivityLabels,
+            datasets: [
+                {
+                    data: [tempNeutralCount, tempSubjectiveCount],
+                    backgroundColor: chartColors,
+                    hoverBackgroundColor: chartColors
+                }
+            ]
+        }));
+        const tempToxicityDoughnutData = JSON.parse(JSON.stringify({
+            maintainAspectRatio: false,
+            responsive: false,
+            labels: doughnutToxicityLabels,
+            datasets: [
+                {
+                    data: [tempNonToxicCount, tempToxicCount, tempSevereToxicCount],
+                    backgroundColor: chartColors,
+                    hoverBackgroundColor: chartColors
+                }
+            ]
+        }));
+
+        setSubjectivityDoughnutData(tempSubjectivityDoughnutData);
+        setToxicityDoughnutData(tempToxicityDoughnutData);
+    }
+
     return (
         <div className={classes.page}>
             <CountUp end={count} duration={3} style={{ fontSize: 150, lineHeight: 1 }} separator="," />
@@ -429,7 +517,7 @@ export default function Search() {
             </div>
             <div style={{ display: "flex", }}>
                 <div style={{ width: window.innerWidth * 0.5, marginRight: 20, }}>
-                    <Carousel activeIndex={index} onSelect={handleSelect}>
+                    <Carousel activeIndex={index} onSelect={handleSelect} interval={null}>
                         <Carousel.Item>
                             <Typography variant="h3">Map</Typography>
                             <ComposableMap>
@@ -447,19 +535,11 @@ export default function Search() {
                         </Carousel.Item>
                         <Carousel.Item>
                             <Typography variant="h3">Charts</Typography>
-                            <img
-                                className="d-block w-100"
-                                src="holder.js/800x400?text=First slide&bg=373940"
-                                alt="First slide"
-                            />
-                            <Carousel.Caption>
-                                <h3>First slide label</h3>
-                                <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-                            </Carousel.Caption>
+                            {renderDoughnut()}
                         </Carousel.Item>
                     </Carousel>
                 </div>
-                <div>
+                <div style={{ height: window.innerHeight, }}>
                     <Typography variant="h3">Tweets</Typography>
                     <List className={classes.root}>
                         {renderTweetList()}
@@ -489,7 +569,7 @@ const useStyles = makeStyles((theme) => ({
     },
     root: {
         width: window.innerWidth * 0.5 - 150,
-        maxHeight: window.innerHeight - 400,
+        maxHeight: window.innerHeight,
         overflow: "auto",
         backgroundColor: theme.palette.background.paper,
         marginTop: 20,
@@ -517,3 +597,56 @@ const useStyles = makeStyles((theme) => ({
         alignItems: "center",
     }
 }));
+
+const chartColors = [
+    "#336699",
+    "#99CCFF",
+    "#999933",
+    "#666699",
+    "#CC9933",
+    "#006666",
+    "#3399FF",
+    "#993300",
+    "#CCCC99",
+    "#666666",
+    "#FFCC66",
+    "#6699CC",
+    "#663366",
+    "#9999CC",
+    "#CCCCCC",
+    "#669999",
+    "#CCCC66",
+    "#CC6600",
+    "#9999FF",
+    "#0066CC",
+    "#99CCCC",
+    "#999999",
+    "#FFCC00",
+    "#009999",
+    "#99CC33",
+    "#FF9900",
+    "#999966",
+    "#66CCCC",
+    "#339966",
+    "#CCCC33",
+    "#003f5c",
+    "#665191",
+    "#a05195",
+    "#d45087",
+    "#2f4b7c",
+    "#f95d6a",
+    "#ff7c43",
+    "#ffa600",
+    "#EF6F6C",
+    "#465775",
+    "#56E39F",
+    "#59C9A5",
+    "#5B6C5D",
+    "#0A2342",
+    "#2CA58D",
+    "#84BC9C",
+    "#CBA328",
+    "#F46197",
+    "#DBCFB0",
+    "#545775"
+];
