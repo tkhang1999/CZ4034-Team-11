@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 
 import Geo from "./components/Geo";
 import TabPanel from "./components/TabPanel";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 //Handles sticky header
 function ElevationScroll(props) {

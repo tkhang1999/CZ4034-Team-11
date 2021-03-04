@@ -7,6 +7,8 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 import { ChevronLeft, ChevronRight, Search as SearchIcon } from '@material-ui/icons';
 import { Countries } from "../constants/Countries";
 
+import Carousel from 'react-bootstrap/Carousel'
+
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
 const subjectivityFilterList = ["", "Neutral", "Subjective"]
 const toxicityFilterList = ["", "Toxic", "Severe Toxic", "Non Toxic"]
@@ -30,7 +32,12 @@ export default function Search() {
     const [showTooltip, setShowTooltip] = useState(false);
     const [searchToggle, setSearchToggle] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
+    const [index, setIndex] = useState(0);
     const classes = useStyles();
+
+    const handleSelect = (selectedIndex, e) => {
+        setIndex(selectedIndex);
+    };
 
     useEffect(() => {
         onCountrySelect();
@@ -118,7 +125,6 @@ export default function Search() {
             user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
         } else {
             user_location = "*";
-            // setCount(0);
         }
         let lower = "*";
         if (query !== "") {
@@ -423,19 +429,35 @@ export default function Search() {
             </div>
             <div style={{ display: "flex", }}>
                 <div style={{ width: window.innerWidth * 0.5, marginRight: 20, }}>
-                    <Typography variant="h3">Map</Typography>
-                    <ComposableMap>
-                        <Geographies
-                            geography={geoUrl}>
-                            {({ geographies }) =>
-                                geographies.map(geo => <Geography
-                                    key={geo.rsmKey} geography={geo}
-                                    fill="#EAEAEC"
-                                    stroke="#D6D6DA" />)
-                            }
-                        </Geographies>
-                        {renderMarker()}
-                    </ComposableMap>
+                    <Carousel activeIndex={index} onSelect={handleSelect}>
+                        <Carousel.Item>
+                            <Typography variant="h3">Map</Typography>
+                            <ComposableMap>
+                                <Geographies
+                                    geography={geoUrl}>
+                                    {({ geographies }) =>
+                                        geographies.map(geo => <Geography
+                                            key={geo.rsmKey} geography={geo}
+                                            fill="#EAEAEC"
+                                            stroke="#D6D6DA" />)
+                                    }
+                                </Geographies>
+                                {renderMarker()}
+                            </ComposableMap>
+                        </Carousel.Item>
+                        <Carousel.Item>
+                            <Typography variant="h3">Charts</Typography>
+                            <img
+                                className="d-block w-100"
+                                src="holder.js/800x400?text=First slide&bg=373940"
+                                alt="First slide"
+                            />
+                            <Carousel.Caption>
+                                <h3>First slide label</h3>
+                                <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
+                            </Carousel.Caption>
+                        </Carousel.Item>
+                    </Carousel>
                 </div>
                 <div>
                     <Typography variant="h3">Tweets</Typography>
