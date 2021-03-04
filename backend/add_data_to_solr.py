@@ -14,7 +14,9 @@ tweets = pd.read_csv(directory, dtype={'id': str})
 #    "toxic": row["toxic"], "severe_toxic": row["severe_toxic"], "subjectivity": row["subjectivity"]} \
 #    for index, row in tweets.iterrows()]
 
-data = [{"id": index, "tweet": row["text"], "user_location": row["user_location"], "link": row["url"],  "user_geo": row["user_geo"], \
+
+data = [{"id": index, "tweet": row["text"], "user_location": row["user_location"], "link": row["url"],  \
+	"user_geo": list(map(float, row["user_geo"].strip("()").split(","))), \
     "toxicity": row["toxicity"], "subjectivity": row["subjectivity"]} \
     for index, row in tweets.iterrows()]
 
