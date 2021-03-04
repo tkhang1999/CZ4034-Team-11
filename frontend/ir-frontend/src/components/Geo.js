@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText } from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText, CircularProgress } from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { ChevronLeft, ChevronRight } from '@material-ui/icons';
 import { Countries } from "../constants/Countries";
@@ -111,6 +111,7 @@ export default function Search() {
             // setCount(0);
         }
         const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=tweet:*&rows=20000&user_location:${user_location}${queryparams}`);
+        setMapGeo(geo.data.response.docs);
         const rows = geo.data.response.docs.map(item => {
             return createData(countryList[country - 1], item.user_geo)
         });
@@ -220,6 +221,10 @@ export default function Search() {
             <ChevronRight />
         </div>);
     }
+
+    // if(mapGeo == null){
+    //     return(<CircularProgress />);
+    // }
 
     return (
         <div className={classes.page}>
