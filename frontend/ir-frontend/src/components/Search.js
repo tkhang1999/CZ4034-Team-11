@@ -41,13 +41,13 @@ export default function Search() {
 
     switch (toxicityFilter) {
       case 1:
-        queryparams += "&fq=toxic:1"
+        queryparams += "&fq=toxicity:1"
         break;
       case 2:
-        queryparams += "&fq=severe_toxic:1"
+        queryparams += "&fq=toxicity:2"
         break;
       case 3:
-        queryparams += "&fq=toxic:0"
+        queryparams += "&fq=toxicity:0"
         break;
     }
     const data = await axios.get(`/solr/toxictweets/select?q=tweet:${query}&rows=10&start=${page * 10}${queryparams}`);

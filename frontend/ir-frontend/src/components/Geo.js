@@ -53,15 +53,15 @@ export default function Search() {
 
         switch (toxicityFilter) {
             case 1:
-                queryparams += "&fq=toxic:1"
-                break;
+              queryparams += "&fq=toxicity:1"
+              break;
             case 2:
-                queryparams += "&fq=severe_toxic:1"
-                break;
+              queryparams += "&fq=toxicity:2"
+              break;
             case 3:
-                queryparams += "&fq=toxic:0"
-                break;
-        }
+              queryparams += "&fq=toxicity:0"
+              break;
+          }
         if (country !== 0) {
             user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
         } else {
