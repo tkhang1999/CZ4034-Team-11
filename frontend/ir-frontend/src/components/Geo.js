@@ -51,10 +51,6 @@ export default function Search() {
         handleMapMarker();
     }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
 
-    useEffect(() => {
-        getDoughnutCounts();
-    }, [tweets]);
-
     function createData(name, user_geo) {
         let long = 0.0;
         let lat = 0.0;
@@ -99,11 +95,61 @@ export default function Search() {
             lower = query.toLowerCase();
         }
         response = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&fq=user_location:${user_location}&rows=${numRows}&start=${page * numRows}${queryparams}`);
+        let tempNonToxicCount = 0;
+        let tempToxicCount = 0;
+        let tempSevereToxicCount = 0;
+        let tempNeutralCount = 0;
+        let tempSubjectiveCount = 0;
+
+        for (let i = 0; i < response.data.response.docs.length; i++) {
+            const tweet = response.data.response.docs[i];
+            if (tweet.subjectivity == 0) {
+                tempNeutralCount += 1;
+            } else if (tweet.subjectivity == 1) {
+                tempSubjectiveCount += 1;
+            }
+            if (tweet.toxicity == 0) {
+                tempNonToxicCount += 1;
+            } else if (tweet.toxicity == 1) {
+                tempToxicCount += 1;
+            } else if (tweet.toxicity == 2) {
+                tempSevereToxicCount += 1;
+            }
+        }
+
+        const tempSubjectivityDoughnutData = JSON.parse(JSON.stringify({
+            maintainAspectRatio: false,
+            responsive: false,
+            labels: doughnutSubjectivityLabels,
+            datasets: [
+                {
+                    data: [tempNeutralCount, tempSubjectiveCount],
+                    backgroundColor: chartColors,
+                    hoverBackgroundColor: chartColors
+                }
+            ]
+        }));
+        const tempToxicityDoughnutData = JSON.parse(JSON.stringify({
+            maintainAspectRatio: false,
+            responsive: false,
+            labels: doughnutToxicityLabels,
+            datasets: [
+                {
+                    data: [tempNonToxicCount, tempToxicCount, tempSevereToxicCount],
+                    backgroundColor: chartColors,
+                    hoverBackgroundColor: chartColors
+                }
+            ]
+        }));
+
+        setSubjectivityDoughnutData(tempSubjectivityDoughnutData);
+        setToxicityDoughnutData(tempToxicityDoughnutData);
         setCount(response.data.response.numFound);
         setTweets(response.data.response.docs);
         if (response.data.spellcheck && response.data.spellcheck.suggestions[1] && response.data.spellcheck.suggestions[1].suggestion.length > 0) {
             setSuggestions(response.data.spellcheck.suggestions[1].suggestion);
         }
+
     }
 
     const handleMapMarker = async () => {
@@ -363,81 +409,12 @@ export default function Search() {
         } else {
             return (
                 <div>
-                    < Doughnut data={toxicityDoughnutData} />
-                    < Doughnut data={subjectivityDoughnutData} />
+                    <Doughnut data={toxicityDoughnutData} />
+                    <Doughnut data={subjectivityDoughnutData} />
                 </div>
             );
         }
 
-    }
-
-    const getDoughnutCounts = () => {
-        if (tweets == null || country == 0) {
-            return;
-        }
-
-        let tempNonToxicCount = 0;
-        let tempToxicCount = 0;
-        let tempSevereToxicCount = 0;
-        let tempNeutralCount = 0;
-        let tempSubjectiveCount = 0;
-
-        console.log("tweets length")
-        console.log(tweets.length)
-        for (var i = 0; i < tweets.length; i++) {
-            const tweet = tweets[i];
-            if (tweet.subjectivity == 0) {
-                tempNeutralCount += 1;
-            } else if (tweet.subjectivity == 1) {
-                tempSubjectiveCount += 1;
-            }
-            if (tweet.toxicity == 0) {
-                tempNonToxicCount += 1;
-            } else if (tweet.toxicity == 1) {
-                tempToxicCount += 1;
-            } else if (tweet.toxicity == 2) {
-                tempSevereToxicCount += 1;
-            }
-        }
-
-        console.log("neutral")
-        console.log(tempNeutralCount)
-        console.log("subjective")
-        console.log(tempSubjectiveCount)
-        console.log("non toxic")
-        console.log(tempNonToxicCount)
-        console.log("toxic")
-        console.log(tempToxicCount)
-        console.log("severe toxic")
-        console.log(tempSevereToxicCount)
-
-        const tempSubjectivityDoughnutData = JSON.parse(JSON.stringify({
-            maintainAspectRatio: false,
-            responsive: false,
-            labels: doughnutSubjectivityLabels,
-            datasets: [
-                {
-                    data: [tempNeutralCount, tempSubjectiveCount],
-                    backgroundColor: chartColors,
-                    hoverBackgroundColor: chartColors
-                }
-            ]
-        }));
-        const tempToxicityDoughnutData = JSON.parse(JSON.stringify({
-            maintainAspectRatio: false,
-            responsive: false,
-            labels: doughnutToxicityLabels,
-            datasets: [
-                {
-                    data: [tempNonToxicCount, tempToxicCount, tempSevereToxicCount],
-                    backgroundColor: chartColors,
-                    hoverBackgroundColor: chartColors
-                }
-            ]
-        }));
-
-        setSubjectivityDoughnutData(tempSubjectivityDoughnutData);
-        setToxicityDoughnutData(tempToxicityDoughnutData);
     }
 
     return (
