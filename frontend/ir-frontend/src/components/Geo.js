@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText, CircularProgress } from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText, CircularProgress, Chip } from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { ChevronLeft, ChevronRight } from '@material-ui/icons';
 import { Countries } from "../constants/Countries";
@@ -10,6 +10,11 @@ import { Countries } from "../constants/Countries";
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
 const subjectivityFilterList = ["", "Neutral", "Subjective"]
 const toxicityFilterList = ["", "Toxic", "Severe Toxic", "Non Toxic"]
+
+const columnDict = {
+    toxicity: "T",
+    subjectivity: "S",
+}
 
 export default function Search() {
     const markerOffset = 15;
@@ -27,7 +32,7 @@ export default function Search() {
         onCountrySelect();
     }, [country, subjectivityFilter, toxicityFilter, page]);
 
-    useEffect(()=>{
+    useEffect(() => {
         handleMapMarker();
     }, [country, subjectivityFilter, toxicityFilter])
 
@@ -78,7 +83,7 @@ export default function Search() {
         setTweets(response.data.response.docs);
     }
 
-    const handleMapMarker = async() =>{
+    const handleMapMarker = async () => {
         let queryparams = "";
         let user_location = "";
         setMarkers([])
@@ -188,10 +193,16 @@ export default function Search() {
 
         return tweets.map(t => (
             <div>
-                <ListItem alignItems="flex-start">
+                <ListItem alignItems="flex-start" style={{ flexDirection: "column" }}>
                     <ListItemText
                         primary={t.tweet}
                     />
+
+                    <div style={{ display: "flex" }}>
+                        {renderStatusIcon(columnDict.toxicity, t.toxicity)}
+                        {renderStatusIcon(columnDict.subjectivity, t.subjectivity)}
+                    </div>
+
                 </ListItem>
                 <Divider />
             </div>
@@ -222,9 +233,54 @@ export default function Search() {
         </div>);
     }
 
-    // if(mapGeo == null){
-    //     return(<CircularProgress />);
-    // }
+    const renderStatusIcon = (col, value) => {
+        switch (col) {
+            case columnDict.toxicity:
+                if (value == 0) {
+                    return (
+                        <div style={{ margin: 5 }}>
+                            <Chip
+                                label="Non Toxic"
+                                color="secondary"
+                            />
+                        </div>)
+                }
+                if (value == 1) {
+                    return (
+                        <div style={{ margin: 5 }}>
+                            <Chip
+                                label="Toxic"
+                                color="secondary"
+                            />
+                        </div>)
+                }
+                if (value == 2) {
+                    return (
+                        <div style={{ margin: 5 }}>
+                            <Chip
+                                label="Severe Toxic"
+                                color="secondary"
+                            />
+                        </div>)
+                }
+                break;
+            case columnDict.subjectivity:
+                if (value == 0) {
+                    return (<div style={{ margin: 5 }}><Chip
+                        label="Neutral"
+                        color="primary"
+                    /></div>)
+                }
+                else {
+                    return (<div style={{ margin: 5 }}>
+                        <Chip
+                            label="Subjective"
+                            color="primary"
+                        />
+                    </div>)
+                }
+        }
+    }
 
     return (
         <div className={classes.page}>
@@ -338,5 +394,5 @@ const useStyles = makeStyles((theme) => ({
         paddingRight: 50,
         padding: 20,
         justifyContent: "flex-end"
-      },
+    },
 }));
