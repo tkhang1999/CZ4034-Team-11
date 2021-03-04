@@ -6,7 +6,6 @@ import SwipeableViews from "react-swipeable-views";
 import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 
-import Search from "./components/Search";
 import Geo from "./components/Geo";
 import TabPanel from "./components/TabPanel";
 
@@ -46,7 +45,7 @@ function App(props) {
     <div className={classes.page}>
       <CssBaseline />
       <ElevationScroll {...props}>
-        <AppBar style={{backgroundColor: "black"}}>
+        <AppBar style={{ backgroundColor: "black" }}>
           <Toolbar>
             <Typography variant="h6">Welcome</Typography>
           </Toolbar>
@@ -60,7 +59,6 @@ function App(props) {
               variant="fullWidth"
             >
               <Tab label="Search" />
-              <Tab label="Map" />
             </Tabs>
           </Paper>
         </AppBar>
@@ -72,9 +70,6 @@ function App(props) {
         onChangeIndex={handleChangeIndex}
       >
         <TabPanel value={value} index={0} dir={theme.direction}>
-          <Search />
-        </TabPanel>
-        <TabPanel value={value} index={1} dir={theme.direction}>
           <Geo />
         </TabPanel>
       </SwipeableViews>

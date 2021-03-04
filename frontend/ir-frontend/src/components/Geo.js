@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText, CircularProgress, Chip, TextField, Dialog, DialogTitle } from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText, CircularProgress, Chip, TextField, Dialog, DialogTitle, Button } from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
-import { ChevronLeft, ChevronRight } from '@material-ui/icons';
+import { ChevronLeft, ChevronRight, Search as SearchIcon } from '@material-ui/icons';
 import { Countries } from "../constants/Countries";
 
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
@@ -30,16 +30,12 @@ export default function Search() {
     const [showTooltip, setShowTooltip] = useState(false);
     const [searchToggle, setSearchToggle] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
-    const [data, setData] = useState(null);
     const classes = useStyles();
 
     useEffect(() => {
         onCountrySelect();
-    }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
-
-    useEffect(() => {
         handleMapMarker();
-    }, [country, subjectivityFilter, toxicityFilter, searchToggle])
+    }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
 
     function createData(name, user_geo) {
         let long = 0.0;
@@ -52,7 +48,6 @@ export default function Search() {
     const onCountrySelect = async () => {
         let user_location = "";
         let response = "";
-        //put the switch case here and append it to the query params below
         let queryparams = "";
         switch (subjectivityFilter) {
             case 1:
@@ -80,18 +75,23 @@ export default function Search() {
             user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
         } else {
             user_location = "*";
-            // setCount(0);
         }
-
-        response = await axios.get(`/solr/toxictweets/select?q=user_location:${user_location}&rows=10&start=${page * 10}${queryparams}`);
+        let lower = "*";
+        if (query !== "") {
+            lower = query.toLowerCase();
+        }
+        response = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&fq=user_location:${user_location}&rows=10&start=${page * 10}${queryparams}`);
         setCount(response.data.response.numFound);
         setTweets(response.data.response.docs);
+        if (response.data.spellcheck && response.data.spellcheck.suggestions[1] && response.data.spellcheck.suggestions[1].suggestion.length > 0) {
+            setSuggestions(response.data.spellcheck.suggestions[1].suggestion);
+        }
     }
 
     const handleMapMarker = async () => {
         let queryparams = "";
         let user_location = "";
-        setMarkers([])
+        setMarkers([]);
         switch (subjectivityFilter) {
             case 1:
                 queryparams = "&fq=subjectivity:0";
@@ -120,7 +120,11 @@ export default function Search() {
             user_location = "*";
             // setCount(0);
         }
-        const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=tweet:*&rows=20000&user_location:${user_location}${queryparams}`);
+        let lower = "*";
+        if (query !== "") {
+            lower = query.toLowerCase();
+        }
+        const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=user_location:${user_location}&fq=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
         setMapGeo(geo.data.response.docs);
         const rows = geo.data.response.docs.map(item => {
             return createData(countryList[country - 1], item.user_geo)
@@ -191,7 +195,6 @@ export default function Search() {
     }
 
     const renderTweetList = () => {
-        console.log(tweets);
         if (tweets == null) {
             return null;
         }
@@ -289,10 +292,8 @@ export default function Search() {
 
     const handleKeyPress = (event) => {
         if (event.key === 'Enter') {
-            console.log("handleKeyPress enter")
             setPage(0);
-            // onSearch();
-            onCountrySelect();
+            setSearchToggle(!searchToggle);
         }
     }
 
@@ -303,56 +304,23 @@ export default function Search() {
         setSearchToggle(!searchToggle);
     };
 
-    const onSearch = async () => {
-        let queryparams = "";
-        switch (subjectivityFilter) {
-            case 1:
-                queryparams = "&fq=subjectivity:0";
-                break;
-            case 2:
-                queryparams = "&fq=subjectivity:1";
-                break;
-            default:
-                queryparams = "";
-        }
-
-        switch (toxicityFilter) {
-            case 1:
-                queryparams += "&fq=toxic:1"
-                break;
-            case 2:
-                queryparams += "&fq=toxicity:2"
-                break;
-            case 3:
-                queryparams += "&fq=toxicity:0"
-                break;
-        }
-        const lower = query.toLowerCase();
-        console.log(`/solr/toxictweets/select?q=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
-        const data = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
-        setData(data.data.response.docs);
-        if (data.data.spellcheck && data.data.spellcheck.suggestions[1] && data.data.spellcheck.suggestions[1].suggestion.length > 0) {
-            setSuggestions(data.data.spellcheck.suggestions[1].suggestion);
-        }
-    }
-
     const renderDialog = () => {
         if (suggestions == null) {
             return null;
         }
         return (
-            // <div classesName={classes.dialog}>
-            <Dialog onClose={() => { setShowTooltip(false) }} aria-labelledby="simple-dialog-title" open={showTooltip} classes={{ paper: classes.dialog }} >
-                <DialogTitle id="simple-dialog-title">More Suggestions</DialogTitle>
-                <List>
-                    {suggestions.slice(1).map(s => (
-                        <ListItem button onClick={() => { handleListItemClick(s) }} key={s}>
-                            <ListItemText primary={s} />
-                        </ListItem>
-                    ))}
-                </List>
-            </Dialog >
-            // </div>
+            <div classesName={classes.dialog}>
+                <Dialog onClose={() => { setShowTooltip(false) }} aria-labelledby="simple-dialog-title" open={showTooltip} classes={{ paper: classes.dialog }} >
+                    <DialogTitle id="simple-dialog-title">More Suggestions</DialogTitle>
+                    <List>
+                        {suggestions.slice(1).map(s => (
+                            <ListItem button onClick={() => { handleListItemClick(s) }} key={s}>
+                                <ListItemText primary={s} />
+                            </ListItem>
+                        ))}
+                    </List>
+                </Dialog >
+            </div>
         )
     }
 
@@ -380,10 +348,26 @@ export default function Search() {
                 {renderSuggestions()}
                 {renderDialog()}
             </div>
-            <div className={classes.formControl}>
+
+            <div className={classes.searchContainer}>
+                {/* <div className={classes.formControl}> */}
                 <FormControl style={{ flex: 5, marginRight: 20 }}>
                     <TextField id="outlined-basic" label="Type your search query here" variant="outlined" value={query} onChange={(event) => setQuery(event.target.value)} onKeyPress={handleKeyPress} />
                 </FormControl>
+                {/* </div> */}
+                <div>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        className={classes.searchContainer}
+                        startIcon={<SearchIcon />}
+                        onClick={() => { setPage(0); onCountrySelect(); }}
+                    >
+                        Search
+            </Button>
+                </div>
+
             </div>
             <div className={classes.formControl}>
                 <FormControl variant="outlined" style={{ flex: 1, marginRight: 5, }}>
@@ -494,4 +478,20 @@ const useStyles = makeStyles((theme) => ({
         padding: 20,
         justifyContent: "flex-end"
     },
+    dialog: {
+        position: 'absolute',
+        left: 210,
+        top: 120,
+    },
+    suggestionText: {
+        width: "100%",
+        display: "flex",
+        justifyContent: "left",
+    },
+    searchContainer: {
+        display: "flex",
+        justifyContent: "space-between",
+        width: "100%",
+        alignItems: "center",
+    }
 }));
