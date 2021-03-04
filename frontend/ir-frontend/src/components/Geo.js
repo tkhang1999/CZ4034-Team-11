@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText} from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText } from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+import { ChevronLeft, ChevronRight } from '@material-ui/icons';
 import { Countries } from "../constants/Countries";
 
 const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json";
@@ -18,26 +19,29 @@ export default function Search() {
     const [markers, setMarkers] = useState([])
     const [count, setCount] = useState(0);
     const [tweets, setTweets] = useState(null);
+    const [page, setPage] = useState(0);
+    const [mapGeo, setMapGeo] = useState(null);
     const classes = useStyles();
 
     useEffect(() => {
         onCountrySelect();
+    }, [country, subjectivityFilter, toxicityFilter, page]);
+
+    useEffect(()=>{
+        handleMapMarker();
     }, [country, subjectivityFilter, toxicityFilter])
 
     function createData(name, user_geo) {
-        let elements = "";
         let long = 0.0;
         let lat = 0.0;
-        elements = user_geo[0].slice(1, -1).split(",");
-        lat = parseFloat(elements[0]);
-        long = parseFloat(elements[1]);
+        lat = user_geo[0]
+        long = user_geo[1]
         return { name, long, lat }
     }
 
     const onCountrySelect = async () => {
         let user_location = "";
         let response = "";
-        setMarkers([])
         //put the switch case here and append it to the query params below
         let queryparams = "";
         switch (subjectivityFilter) {
@@ -53,26 +57,61 @@ export default function Search() {
 
         switch (toxicityFilter) {
             case 1:
-              queryparams += "&fq=toxicity:1"
-              break;
+                queryparams += "&fq=toxicity:1"
+                break;
             case 2:
-              queryparams += "&fq=toxicity:2"
-              break;
+                queryparams += "&fq=toxicity:2"
+                break;
             case 3:
-              queryparams += "&fq=toxicity:0"
-              break;
-          }
+                queryparams += "&fq=toxicity:0"
+                break;
+        }
         if (country !== 0) {
             user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
         } else {
             user_location = "*";
             // setCount(0);
         }
-        console.log(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
-        response = await axios.get(`/solr/toxictweets/select?q=user_location:${user_location}&rows=100000&${queryparams}`);
+
+        response = await axios.get(`/solr/toxictweets/select?q=user_location:${user_location}&rows=10&start=${page * 10}${queryparams}`);
         setCount(response.data.response.numFound);
         setTweets(response.data.response.docs);
-        const rows = response.data.response.docs.map(item => {
+    }
+
+    const handleMapMarker = async() =>{
+        let queryparams = "";
+        let user_location = "";
+        setMarkers([])
+        switch (subjectivityFilter) {
+            case 1:
+                queryparams = "&fq=subjectivity:0";
+                break;
+            case 2:
+                queryparams = "&fq=subjectivity:1";
+                break;
+            default:
+                queryparams = "";
+        }
+
+        switch (toxicityFilter) {
+            case 1:
+                queryparams += "&fq=toxicity:1"
+                break;
+            case 2:
+                queryparams += "&fq=toxicity:2"
+                break;
+            case 3:
+                queryparams += "&fq=toxicity:0"
+                break;
+        }
+        if (country !== 0) {
+            user_location = "'" + countryList[country - 1].replace(" ", "%20") + "'";
+        } else {
+            user_location = "*";
+            // setCount(0);
+        }
+        const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=tweet:*&rows=20000&user_location:${user_location}${queryparams}`);
+        const rows = geo.data.response.docs.map(item => {
             return createData(countryList[country - 1], item.user_geo)
         });
         let newMarkers = [];
@@ -147,15 +186,39 @@ export default function Search() {
         }
 
         return tweets.map(t => (
-        <div>
-            <ListItem alignItems="flex-start">
-                <ListItemText
-                    primary={t.tweet}
-                />
-            </ListItem>
-            <Divider />
-        </div>
+            <div>
+                <ListItem alignItems="flex-start">
+                    <ListItemText
+                        primary={t.tweet}
+                    />
+                </ListItem>
+                <Divider />
+            </div>
         ))
+    }
+
+    const renderArrowLeft = () => {
+        if (page == 0) {
+            return (
+                <div className={classes.icon} style={{ color: "white" }}>
+                    <ChevronLeft />
+                </div>);
+        }
+        return (<div className={classes.icon} onClick={() => setPage(page - 1)}>
+            <ChevronLeft />
+        </div>)
+    }
+
+    const renderArrowRight = () => {
+        if (count < 10) {
+            return (
+                <div className={classes.icon} style={{ color: "white" }}>
+                    <ChevronRight />
+                </div>);
+        }
+        return (<div className={classes.icon} onClick={() => setPage(page + 1)}>
+            <ChevronRight />
+        </div>);
     }
 
     return (
@@ -216,7 +279,7 @@ export default function Search() {
             </div>
             <div style={{ display: "flex", }}>
                 <div style={{ width: window.innerWidth * 0.5, marginRight: 20, }}>
-                <Typography variant="h3">Map</Typography>
+                    <Typography variant="h3">Map</Typography>
                     <ComposableMap>
                         <Geographies
                             geography={geoUrl}>
@@ -235,6 +298,11 @@ export default function Search() {
                     <List className={classes.root}>
                         {renderTweetList()}
                     </List>
+                    <div className={classes.pagination}>
+                        Page: {page + 1}
+                        {renderArrowLeft()}
+                        {renderArrowRight()}
+                    </div>
                 </div>
             </div>
         </div >)
@@ -256,8 +324,14 @@ const useStyles = makeStyles((theme) => ({
     root: {
         width: window.innerWidth * 0.5 - 150,
         maxHeight: window.innerHeight - 400,
-        overflow:"auto",
+        overflow: "auto",
         backgroundColor: theme.palette.background.paper,
         marginTop: 20,
-    }
+    },
+    pagination: {
+        display: "flex",
+        paddingRight: 50,
+        padding: 20,
+        justifyContent: "flex-end"
+      },
 }));
