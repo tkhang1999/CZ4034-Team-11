@@ -4,6 +4,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, FormControl, Button, Select, InputLabel, MenuItem, Paper, Dialog, ListItem, ListItemText, List, DialogTitle } from '@material-ui/core';
 import { Search as SearchIcon, ChevronLeft, ChevronRight, Check, Clear } from '@material-ui/icons';
 
+const columnDict = {
+  severe_toxic : "ST",
+  toxic: "T",
+  subjectivity: "S",
+}
+
 export default function Search() {
   const [page, setPage] = useState(0);
   const [data, setData] = useState(null);
@@ -41,7 +47,7 @@ export default function Search() {
 
     switch (toxicityFilter) {
       case 1:
-        queryparams += "&fq=toxicity:1"
+        queryparams += "&fq=toxic:1"
         break;
       case 2:
         queryparams += "&fq=toxicity:2"
@@ -50,7 +56,9 @@ export default function Search() {
         queryparams += "&fq=toxicity:0"
         break;
     }
-    const data = await axios.get(`/solr/toxictweets/select?q=tweet:${query}&rows=10&start=${page * 10}${queryparams}`);
+    const lower = query.toLowerCase();
+    console.log(`/solr/toxictweets/select?q=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
+    const data = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
     setData(data.data.response.docs);
     // console.log(data.data.spellcheck);
     if (data.data.spellcheck && data.data.spellcheck.suggestions[1] && data.data.spellcheck.suggestions[1].suggestion.length > 0) {
@@ -103,7 +111,26 @@ export default function Search() {
     }
   }
 
-  const renderStatusIcon = ([bool]) => {
+  const renderStatusIcon = (col, value) => {
+    let bool = false;
+    switch(col){
+      case columnDict.toxic:
+        if(value ==1){
+          bool = true;
+        }
+        break;
+      case columnDict.severe_toxic:
+        if(value ==2){
+          bool = true;
+        }
+        break;
+      case columnDict.subjectivity:
+        if(value ==1){
+          bool=true;
+        }
+        break;
+    }
+
     if (bool) {
       return <div style={{ color: "green" }}>
         <Check />
@@ -144,9 +171,9 @@ export default function Search() {
                   </TableCell>
                   <TableCell align="left">{row.tweet}</TableCell>
                   <TableCell align="left">{row.link}</TableCell>
-                  <TableCell align="center">{renderStatusIcon(row.toxic)}</TableCell>
-                  <TableCell align="center">{renderStatusIcon(row.severe_toxic)}</TableCell>
-                  <TableCell align="center">{renderStatusIcon(row.subjectivity)}</TableCell>
+                  <TableCell align="center">{renderStatusIcon(columnDict.toxic, row.toxicity)}</TableCell>
+                  <TableCell align="center">{renderStatusIcon(columnDict.severe_toxic ,row.toxicity)}</TableCell>
+                  <TableCell align="center">{renderStatusIcon(columnDict.subjectivity, row.subjectivity)}</TableCell>
                 </TableRow>
               ))}</TableBody>
           </Table>
