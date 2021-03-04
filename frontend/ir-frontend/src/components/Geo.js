@@ -16,6 +16,7 @@ const subjectivityFilterList = ["", "Neutral", "Subjective"]
 const toxicityFilterList = ["", "Toxic", "Severe Toxic", "Non Toxic"]
 const doughnutSubjectivityLabels = ["Neutral", "Subjective"]
 const doughnutToxicityLabels = ["Non Toxic", "Toxic", "Severe Toxic"]
+const numRows = 100;
 
 const columnDict = {
     toxicity: "T",
@@ -48,8 +49,11 @@ export default function Search() {
     useEffect(() => {
         onCountrySelect();
         handleMapMarker();
-        getDoughnutCounts();
     }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
+
+    useEffect(() => {
+        getDoughnutCounts();
+    }, [tweets]);
 
     function createData(name, user_geo) {
         let long = 0.0;
@@ -94,7 +98,7 @@ export default function Search() {
         if (query !== "") {
             lower = query.toLowerCase();
         }
-        response = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&fq=user_location:${user_location}&rows=100&start=${page * 10}${queryparams}`);
+        response = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&fq=user_location:${user_location}&rows=${numRows}&start=${page * numRows}${queryparams}`);
         setCount(response.data.response.numFound);
         setTweets(response.data.response.docs);
         if (response.data.spellcheck && response.data.spellcheck.suggestions[1] && response.data.spellcheck.suggestions[1].suggestion.length > 0) {
@@ -137,7 +141,7 @@ export default function Search() {
         if (query !== "") {
             lower = query.toLowerCase();
         }
-        const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=user_location:${user_location}&fq=tweet:${lower}&rows=100&start=${page * 10}${queryparams}`);
+        const geo = await axios.get(`/solr/toxictweets/select?fl=user_geo&q=user_location:${user_location}&fq=tweet:${lower}&rows=${numRows}&start=${page * numRows}${queryparams}`);
         setMapGeo(geo.data.response.docs);
         const rows = geo.data.response.docs.map(item => {
             return createData(countryList[country - 1], item.user_geo)
@@ -243,7 +247,7 @@ export default function Search() {
     }
 
     const renderArrowRight = () => {
-        if (count < 10) {
+        if (count < numRows) {
             return (
                 <div className={classes.icon} style={{ color: "white" }}>
                     <ChevronRight />
@@ -378,6 +382,8 @@ export default function Search() {
         let tempNeutralCount = 0;
         let tempSubjectiveCount = 0;
 
+        console.log("tweets length")
+        console.log(tweets.length)
         for (var i = 0; i < tweets.length; i++) {
             const tweet = tweets[i];
             if (tweet.subjectivity == 0) {
