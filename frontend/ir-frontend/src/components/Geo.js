@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import CountUp from 'react-countup';
 import axios from "axios";
 import { makeStyles } from '@material-ui/core/styles';
-import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText, CircularProgress, Chip } from '@material-ui/core';
+import { Typography, FormControl, Select, InputLabel, MenuItem, List, ListItem, Divider, ListItemText, CircularProgress, Chip, TextField, Dialog, DialogTitle } from '@material-ui/core';
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 import { ChevronLeft, ChevronRight } from '@material-ui/icons';
 import { Countries } from "../constants/Countries";
@@ -26,15 +26,20 @@ export default function Search() {
     const [tweets, setTweets] = useState(null);
     const [page, setPage] = useState(0);
     const [mapGeo, setMapGeo] = useState(null);
+    const [query, setQuery] = useState("");
+    const [showTooltip, setShowTooltip] = useState(false);
+    const [searchToggle, setSearchToggle] = useState(false);
+    const [suggestions, setSuggestions] = useState([]);
+    const [data, setData] = useState(null);
     const classes = useStyles();
 
     useEffect(() => {
         onCountrySelect();
-    }, [country, subjectivityFilter, toxicityFilter, page]);
+    }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
 
     useEffect(() => {
         handleMapMarker();
-    }, [country, subjectivityFilter, toxicityFilter])
+    }, [country, subjectivityFilter, toxicityFilter, searchToggle])
 
     function createData(name, user_geo) {
         let long = 0.0;
@@ -282,10 +287,104 @@ export default function Search() {
         }
     }
 
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            console.log("handleKeyPress enter")
+            setPage(0);
+            // onSearch();
+            onCountrySelect();
+        }
+    }
+
+    const handleListItemClick = (value) => {
+        setQuery(value);
+        setShowTooltip(false);
+        setSuggestions(null);
+        setSearchToggle(!searchToggle);
+    };
+
+    const onSearch = async () => {
+        let queryparams = "";
+        switch (subjectivityFilter) {
+            case 1:
+                queryparams = "&fq=subjectivity:0";
+                break;
+            case 2:
+                queryparams = "&fq=subjectivity:1";
+                break;
+            default:
+                queryparams = "";
+        }
+
+        switch (toxicityFilter) {
+            case 1:
+                queryparams += "&fq=toxic:1"
+                break;
+            case 2:
+                queryparams += "&fq=toxicity:2"
+                break;
+            case 3:
+                queryparams += "&fq=toxicity:0"
+                break;
+        }
+        const lower = query.toLowerCase();
+        console.log(`/solr/toxictweets/select?q=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
+        const data = await axios.get(`/solr/toxictweets/select?q=tweet:${lower}&rows=10&start=${page * 10}${queryparams}`);
+        setData(data.data.response.docs);
+        if (data.data.spellcheck && data.data.spellcheck.suggestions[1] && data.data.spellcheck.suggestions[1].suggestion.length > 0) {
+            setSuggestions(data.data.spellcheck.suggestions[1].suggestion);
+        }
+    }
+
+    const renderDialog = () => {
+        if (suggestions == null) {
+            return null;
+        }
+        return (
+            // <div classesName={classes.dialog}>
+            <Dialog onClose={() => { setShowTooltip(false) }} aria-labelledby="simple-dialog-title" open={showTooltip} classes={{ paper: classes.dialog }} >
+                <DialogTitle id="simple-dialog-title">More Suggestions</DialogTitle>
+                <List>
+                    {suggestions.slice(1).map(s => (
+                        <ListItem button onClick={() => { handleListItemClick(s) }} key={s}>
+                            <ListItemText primary={s} />
+                        </ListItem>
+                    ))}
+                </List>
+            </Dialog >
+            // </div>
+        )
+    }
+
+    const renderSuggestions = () => {
+        if (suggestions == null) {
+            return;
+        }
+
+        if (suggestions.length > 0) {
+            return (<p>Did you mean <i onClick={() => { handleListItemClick(suggestions[0]) }} style={{
+                color: '#0000b2',
+                cursor: 'pointer'
+            }}>"{suggestions[0]}"</i> <b onClick={() => setShowTooltip(true)} style={{
+                color: '#808080',
+                cursor: 'pointer'
+            }}>more</b></p>)
+        }
+    }
+
     return (
         <div className={classes.page}>
             <CountUp end={count} duration={3} style={{ fontSize: 150, lineHeight: 1 }} separator="," />
             {renderCaption()}
+            <div className={classes.suggestionText}>
+                {renderSuggestions()}
+                {renderDialog()}
+            </div>
+            <div className={classes.formControl}>
+                <FormControl style={{ flex: 5, marginRight: 20 }}>
+                    <TextField id="outlined-basic" label="Type your search query here" variant="outlined" value={query} onChange={(event) => setQuery(event.target.value)} onKeyPress={handleKeyPress} />
+                </FormControl>
+            </div>
             <div className={classes.formControl}>
                 <FormControl variant="outlined" style={{ flex: 1, marginRight: 5, }}>
                     <InputLabel id="demo-simple-select-outlined-label">Countries</InputLabel>
