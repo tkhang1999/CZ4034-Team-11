@@ -50,30 +50,10 @@ function App(props) {
           <Toolbar>
             <Typography variant="h6">Welcome</Typography>
           </Toolbar>
-          <Paper style={{ width: "100%" }}>
-            <Tabs
-              value={value}
-              indicatorColor="primary"
-              textColor="primary"
-              onChange={handleChangeTabs}
-              aria-label="disabled tabs example"
-              variant="fullWidth"
-            >
-              <Tab label="Search" />
-            </Tabs>
-          </Paper>
         </AppBar>
       </ElevationScroll>
       <Toolbar />
-      <SwipeableViews
-        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-        index={value}
-        onChangeIndex={handleChangeIndex}
-      >
-        <TabPanel value={value} index={0} dir={theme.direction}>
-          <Geo />
-        </TabPanel>
-      </SwipeableViews>
+      <Geo />
     </div>
   );
 }
