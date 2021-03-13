@@ -49,8 +49,8 @@ export default function Search() {
     };
 
     useEffect(() => {
-        handleOverallDoughnut();
         onCountrySelect();
+        handleOverallDoughnut();
         handleMapMarker();
     }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
 
@@ -216,6 +216,7 @@ export default function Search() {
         }
         response = await axios.get(`/solr/toxictweets/select?facet.field=toxicity&facet.field=subjectivity&facet=on&q=tweet:${lower}&rows=0`);
 
+        console.log("handleOverallDoughnut")
         console.log(response.data.facet_counts.facet_fields)
         const overallCounts = response.data.facet_counts.facet_fields
 
