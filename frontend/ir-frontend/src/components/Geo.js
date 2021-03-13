@@ -40,6 +40,8 @@ export default function Search() {
     const [index, setIndex] = useState(0);
     const [subjectivityDoughnutData, setSubjectivityDoughnutData] = useState(null);
     const [toxicityDoughnutData, setToxicityDoughnutData] = useState(null);
+    const [overallSubjectivityDoughnutData, setOverallSubjectivityDoughnutData] = useState(null);
+    const [overallToxicityDoughnutData, setOverallToxicityDoughnutData] = useState(null);
     const classes = useStyles();
 
     const handleSelect = (selectedIndex, e) => {
@@ -48,6 +50,7 @@ export default function Search() {
 
     useEffect(() => {
         onCountrySelect();
+        handleOverallDoughnut();
         handleMapMarker();
     }, [country, subjectivityFilter, toxicityFilter, page, searchToggle]);
 
@@ -204,6 +207,48 @@ export default function Search() {
         setMarkers(newMarkers);
     }
 
+    const handleOverallDoughnut = async () => {
+        let response = "";
+        let lower = "*";
+
+        if (query !== "") {
+            lower = query.toLowerCase();
+        }
+        response = await axios.get(`/solr/toxictweets/select?facet.field=toxicity&facet.field=subjectivity&facet=on&q=tweet:${lower}&rows=0`);
+
+        console.log("handleOverallDoughnut")
+        console.log(response.data.facet_counts.facet_fields)
+        const overallCounts = response.data.facet_counts.facet_fields
+
+        const tempOverallSubjectivityDoughnutData = JSON.parse(JSON.stringify({
+            maintainAspectRatio: false,
+            responsive: false,
+            labels: doughnutSubjectivityLabels,
+            datasets: [
+                {
+                    data: [overallCounts.subjectivity[3], overallCounts.subjectivity[1]],
+                    backgroundColor: subjectivityChartColors,
+                    hoverBackgroundColor: subjectivityChartColors
+                }
+            ]
+        }));
+        const tempOverallToxicityDoughnutData = JSON.parse(JSON.stringify({
+            maintainAspectRatio: false,
+            responsive: false,
+            labels: doughnutToxicityLabels,
+            datasets: [
+                {
+                    data: [overallCounts.toxicity[1], overallCounts.toxicity[3], overallCounts.toxicity[5]],
+                    backgroundColor: toxicityChartColors,
+                    hoverBackgroundColor: toxicityChartColors
+                }
+            ]
+        }));
+
+        setOverallSubjectivityDoughnutData(tempOverallSubjectivityDoughnutData);
+        setOverallToxicityDoughnutData(tempOverallToxicityDoughnutData);
+    }
+
     const handleSubjectivityChange = (event) => {
         setSubjectivityFilter(event.target.value);
     };
@@ -249,7 +294,7 @@ export default function Search() {
 
         if (country !== 0) {
             return (<Typography variant="h5" gutterBottom>
-                {text} tweets in the {countryList[country - 1]}
+                {text} tweets in {countryList[country - 1]}
             </Typography>)
         }
         return (<Typography variant="h5" gutterBottom>
@@ -403,7 +448,20 @@ export default function Search() {
         }
     }
 
-    const renderDoughnut = () => {
+    const renderOverallDoughnut = () => {
+        if (overallToxicityDoughnutData == null || overallSubjectivityDoughnutData == null) {
+            return (<Typography variant="h8">Hello</Typography>);
+        } else {
+            return (
+                <div>
+                    <Doughnut data={overallToxicityDoughnutData} />
+                    <Doughnut data={overallSubjectivityDoughnutData} />
+                </div>
+            );
+        }
+    }
+
+    const renderCountryDoughnut = () => {
         if (country == 0) {
             return (<Typography variant="h8">Please select a country</Typography>);
         } else {
@@ -414,7 +472,6 @@ export default function Search() {
                 </div>
             );
         }
-
     }
 
     return (
@@ -517,8 +574,12 @@ export default function Search() {
                             </ComposableMap>
                         </Carousel.Item>
                         <Carousel.Item>
-                            <Typography variant="h3">Charts</Typography>
-                            {renderDoughnut()}
+                            <Typography variant="h3">Overall Tweet Statistics</Typography>
+                            {renderOverallDoughnut()}
+                        </Carousel.Item>
+                        <Carousel.Item>
+                            <Typography variant="h3">Tweet Statistics in: {countryList[country - 1]}</Typography>
+                            {renderCountryDoughnut()}
                         </Carousel.Item>
                     </Carousel>
                 </div>
