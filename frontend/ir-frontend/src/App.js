@@ -7,7 +7,6 @@ import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 
 import Geo from "./components/Geo";
-import TabPanel from "./components/TabPanel";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 //Handles sticky header
@@ -33,14 +32,6 @@ function App(props) {
   const [value, setValue] = useState(0);
   const theme = useTheme();
   const classes = useStyles();
-
-  const handleChangeTabs = (event, newValue) => {
-    setValue(newValue);
-  };
-
-  const handleChangeIndex = (index) => {
-    setValue(index);
-  };
 
   return (
     <div className={classes.page}>
