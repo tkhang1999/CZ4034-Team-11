@@ -1,7 +1,8 @@
 # Sentiment analysis
 
-This folder contains the code to preprocess the data and train the classification model as well as different datasets required to train and evaluate the model.
-## STEP 1: Upload two notebooks to drive and open them with google colab.
+This folder contains datasets and the code to preprocess the data and train the classification models.
+
+## STEP 1: Upload two notebooks to drive and open them with google colab. 
 
 The folder contains two Jupyter notebooks, namely "Preprocess Tweets.ipynb" and "Final IR Classification Notebook.ipynb". To run these notebooks, we will need TPU hardware accelerator as well as the built-in environment of google colab. Therefore, rather than running on the local machine, using google colab to execute these notebooks is recommended.
 
